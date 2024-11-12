@@ -565,7 +565,7 @@ int32_t Mode::get_alt_above_ground_cm(void)
         return alt_above_ground_cm;
     }
 
-    // Assume the Earth is flat:
+    // Assume the Earth is flat: 假设地球是平的，返回离地高度
     return copter.current_loc.alt;
 }
 

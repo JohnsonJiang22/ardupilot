@@ -108,6 +108,30 @@ SCHED_TASK_CLASS arguments:
  - expected time (in MicroSeconds) that the method should take to run
  - priority (0 through 255, lower number meaning higher priority)
 
+调度表 - 所有任务应在此列出。
+
+ 此表中的所有条目必须按优先级排序。
+
+ 该表与AP_Vehicle中的表交错，以确定任务运行的顺序。提供了方便的方法SCHED_TASK和SCHED_TASK_CLASS来构建此结构中的条目：
+
+SCHED_TASK参数：
+- 要调用的静态函数的名称
+- 函数应被调用的频率（以赫兹为单位）
+- 函数预计运行所需的时间（以微秒为单位）
+- 优先级（范围从0到255，数字越小优先级越高）
+
+SCHED_TASK_CLASS参数：
+- 要调用的方法的类名
+- 要在其上调用该方法的实例
+- 在该实例上调用的方法
+- 方法应被调用的频率（以赫兹为单位）
+- 方法预计运行所需的时间（以微秒为单位）
+- 优先级（范围从0到255，数字越小优先级越高）
+
+SCHED_TASK_CLASS和SCHED_TASK用来声明产生调度任务表，表中是除了被fast_loop()函数调用任务的其他常规任务。
+其中_rate_hz表示调用频率，_max_time_micros表示最长等待时间。
+注意到SCHED_TASK_CLASS可以指向不同类，而SCHED_TASK固定为Copter类中的函数实现，Copter为无人机类型。
+ 
  */
 const AP_Scheduler::Task Copter::scheduler_tasks[] = {
     // update INS immediately to get current gyro data populated
@@ -256,6 +280,7 @@ const AP_Scheduler::Task Copter::scheduler_tasks[] = {
 #endif
 };
 
+//该函数主要实现获取调度表其实地址，并且计算出任务数量
 void Copter::get_scheduler_tasks(const AP_Scheduler::Task *&tasks,
                                  uint8_t &task_count,
                                  uint32_t &log_bit)
@@ -623,13 +648,17 @@ void Copter::one_hz_loop()
     SRV_Channels::enable_aux_servos();
 
     // log terrain data
-    terrain_logging();
+    terrain_logging(); 
 
 #if HAL_ADSB_ENABLED
     adsb.set_is_flying(!ap.land_complete);
 #endif
 
     AP_Notify::flags.flying = !ap.land_complete;
+
+    gcs().send_text(MAV_SEVERITY_CRITICAL, 
+        "ArduCopter Current altitude: %.1fm", 
+            copter.flightmode->get_alt_above_ground_cm()/100.0f);
 }
 
 void Copter::init_simple_bearing()
@@ -781,4 +810,5 @@ Copter::Copter(void)
 Copter copter;
 AP_Vehicle& vehicle = copter;
 
+//Copter程序入口，来源于libraries/AP_HAL/AP_HAL_Main.h
 AP_HAL_MAIN_CALLBACKS(&copter);

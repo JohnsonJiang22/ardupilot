@@ -129,7 +129,7 @@ public:
     void input_pos_vel_accel_xy(Vector2p& pos, Vector2f& vel, const Vector2f& accel, bool limit_output = true);
 
     // is_active_xy - returns true if the xy position controller has been run in the previous 5 loop times
-    bool is_active_xy() const;
+    bool is_active_xy() const; //如果在前5个循环中执行了xy位置控制器，则返回true
 
     /// stop_pos_xy_stabilisation - sets the target to the current position to remove any position corrections from the system
     void stop_pos_xy_stabilisation();

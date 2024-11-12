@@ -36,8 +36,8 @@ public:
     // set altitude
     void set_alt_cm(int32_t alt_cm, AltFrame frame);
 
-    // get altitude (in cm) in the desired frame
-    // returns false on failure to get altitude in the desired frame which can only happen if the original frame or desired frame is:
+    // get altitude (in cm) in the desired frame 获取目标坐标系下的海拔高度（以厘米为单位）
+    // returns false on failure to get altitude in the desired frame which can only happen if the original frame or desired frame is:如果无法在目标坐标系下获取海拔高度（只能发生在以下情况下），则返回 false
     // - above-terrain and the terrain database can't supply terrain height amsl
     // - above-home and home is not set
     // - above-origin and origin is not set

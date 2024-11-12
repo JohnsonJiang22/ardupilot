@@ -347,6 +347,10 @@ void Plane::one_second_loop()
         !is_equal(G_Dt, scheduler.get_loop_period_s())) {
         INTERNAL_ERROR(AP_InternalError::error_t::flow_of_control);
     }
+
+    gcs().send_text(MAV_SEVERITY_CRITICAL, 
+        "ArduPlane WP_distance: %.1fm", 
+            auto_state.wp_distance);
 }
 
 void Plane::three_hz_loop()
@@ -504,7 +508,7 @@ void Plane::set_flight_stage(AP_Vehicle::FixedWing::FlightStage fs)
 
     if (fs == AP_Vehicle::FixedWing::FLIGHT_ABORT_LAND) {
         gcs().send_text(MAV_SEVERITY_NOTICE, "Landing aborted, climbing to %dm",
-                        int(auto_state.takeoff_altitude_rel_cm/100));
+            int(auto_state.takeoff_altitude_rel_cm/100)); 
     }
 
     flight_stage = fs;

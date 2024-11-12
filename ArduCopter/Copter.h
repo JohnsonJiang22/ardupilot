@@ -265,7 +265,7 @@ private:
         uint32_t glitch_cleared_ms; // system time glitch cleared
     } rangefinder_state, rangefinder_up_state;
 
-    // return rangefinder height interpolated using inertial altitude
+    // return rangefinder height interpolated using inertial altitude 使用惯性高度插值返回测距仪高度
     bool get_rangefinder_height_interpolated_cm(int32_t& ret) const;
 
     class SurfaceTracking {

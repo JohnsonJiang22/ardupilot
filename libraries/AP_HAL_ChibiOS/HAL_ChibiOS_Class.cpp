@@ -176,7 +176,7 @@ extern const AP_HAL::HAL& hal;
 
 
 /*
-  set the priority of the main APM task
+  set the priority of the main APM task 设置APM主任务的优先级
  */
 void hal_chibios_set_priority(uint8_t priority)
 {
@@ -332,6 +332,7 @@ void HAL_ChibiOS::run(int argc, char * const argv[], Callbacks* callbacks) const
     sdStart((SerialDriver*)&HAL_STDOUT_SERIAL, &stdoutcfg);
 #endif
 
+    //对于多旋翼，这里的callbacks=&copter，而Copter对象继承自AP_Vehicle。所以可以知道g_callbacks里面所带的setup/loop是AP_Vehicle::setup/AP_Vehicle::loop
     g_callbacks = callbacks;
 
     //Takeover main

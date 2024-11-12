@@ -656,95 +656,95 @@ private:
 #endif
 
     /*
-      meta data to support counting the number of circles in a loiter
+      meta data to support counting the number of circles in a loiter 用于支持计算盘旋圈数
     */
     struct {
-        // previous target bearing, used to update sum_cd
+        // previous target bearing, used to update sum_cd 先前的目标方位，用于更新sum_cd值
         int32_t old_target_bearing_cd;
 
-        // Total desired rotation in a loiter.  Used for Loiter Turns commands.
+        // Total desired rotation in a loiter.  Used for Loiter Turns commands. 绕飞时所需的总旋转角度，用于绕飞转弯指令
         int32_t total_cd;
 
-        // total angle completed in the loiter so far
+        // total angle completed in the loiter so far 记录到目前为止，在绕飞中完成的总角度
         int32_t sum_cd;
 
-        // Direction for loiter. 1 for clockwise, -1 for counter-clockwise
+        // Direction for loiter. 1 for clockwise, -1 for counter-clockwise 绕飞方向，1-顺时针  -1-逆时针
         int8_t direction;
 
         // when loitering and an altitude is involved, this flag is true when it has been reached at least once
-        bool reached_target_alt;
+        bool reached_target_alt;//在绕飞且涉及高度时，若已达到指定高度至少一次，则此标志为真
 
         // check for scenarios where updrafts can keep you from loitering down indefinitely.
-        bool unable_to_acheive_target_alt;
+        bool unable_to_acheive_target_alt; //检查那些可能由上升气流造成永不停降的绕飞场景
 
-        // start time of the loiter.  Milliseconds.
+        // start time of the loiter.  Milliseconds. 绕飞开始时间，单位ms
         uint32_t start_time_ms;
 
-        // altitude at start of loiter loop lap. Used to detect delta alt of each lap.
+        // altitude at start of loiter loop lap. Used to detect delta alt of each lap.盘旋循环圈开始时的高度，用于检测每圈的高度变化（差）
         // only valid when sum_cd > 36000
-        int32_t start_lap_alt_cm;
-        int32_t next_sum_lap_cd;
+        int32_t start_lap_alt_cm; 
+        int32_t next_sum_lap_cd; 
 
         // The amount of time we should stay in a loiter for the Loiter Time command.  Milliseconds.
-        uint32_t time_max_ms;
+        uint32_t time_max_ms;// Loiter Time指令中应该在绕飞中停留的时间，单位ms
     } loiter;
 
     // Conditional command
     // A value used in condition commands (eg delay, change alt, etc.)
-    // For example in a change altitude command, it is the altitude to change to.
+    // For example in a change altitude command, it is the altitude to change to. 例如在更改高度指令中，该变量指的是目标高度值
     int32_t condition_value;
 
     // A starting value used to check the status of a conditional command.
-    // For example in a delay command the condition_start records that start time for the delay
+    // For example in a delay command the condition_start records that start time for the delay 例如，在延迟指令中，condition_start 记录延迟的开始时间
     uint32_t condition_start;
     // A value used in condition commands.  For example the rate at which to change altitude.
-    int16_t condition_rate;
+    int16_t condition_rate; //条件命令中使用的值，例如改变高度的速率
 
-    // 3D Location vectors
-    // Location structure defined in AP_Common
-    const struct Location &home = ahrs.get_home();
+    // 3D Location vectors 3D位置矢量
+    // Location structure defined in AP_Common 在AP_Common下的Location.h中定义的位置结构体
+    const struct Location &home = ahrs.get_home(); //获取home点位置
 
     // The location of the previous waypoint.  Used for track following and altitude ramp calculations
-    Location prev_WP_loc {};
+    Location prev_WP_loc {}; //前一个航点的位置‌：用于航迹跟踪和高度斜坡计算
 
-    // The plane's current location
+    // The plane's current location 当前位置
     struct Location current_loc {};
 
     // The location of the current/active waypoint.  Used for altitude ramp, track following and loiter calculations.
-    Location next_WP_loc {};
+    Location next_WP_loc {};//当前/活动航点的位置，用于高度斜坡计算（确定飞行高度变化）、航迹跟踪（保持飞行方向正确）和盘旋计算（优化飞行路径）
 
     // Altitude control
     struct {
-        // target altitude above sea level in cm. Used for barometric
-        // altitude navigation
+        // target altitude above sea level in cm. Used for barometric 海拔目标高度（厘米）‌：用于气压测量
+        // altitude navigation 高度导航，是一种基于飞行器当前高度信息的导航方式，通常结合气压计、GPS等多种传感器数据，以确定飞行器的准确高度
         int32_t amsl_cm;
 
         // Altitude difference between previous and current waypoint in
         // centimeters. Used for glide slope handling
-        int32_t offset_cm;
+        int32_t offset_cm; // 上一个航点和当前航点之间的高度差，单位厘米，用于滑行坡度处理
 
 #if AP_TERRAIN_AVAILABLE
-        // are we trying to follow terrain?
+        // are we trying to follow terrain? 是否使用地形跟随？
         bool terrain_following;
 
         // target altitude above terrain in cm, valid if terrain_following
         // is set
-        int32_t terrain_alt_cm;
+        int32_t terrain_alt_cm; // 地形上方的目标高度（使用地形跟随时有效）
 
-        // lookahead value for height error reporting
+        // lookahead value for height error reporting 用于高度误差报告的补偿值
         float lookahead;
 #endif
 
-        // last input for FBWB/CRUISE height control
+        // last input for FBWB/CRUISE height control  FBWB/CRUISE模式下高度控制的最后输入
         float last_elevator_input;
 
-        // last time we checked for pilot control of height
+        // last time we checked for pilot control of height 上次对飞行器高度控制的高度检查时间
         uint32_t last_elev_check_us;
     } target_altitude {};
 
     float relative_altitude;
 
-    // loop performance monitoring:
+    // loop performance monitoring: 循环性能监视器
     AP::PerfInfo perf_info;
     struct {
         uint32_t last_trim_check;
@@ -755,10 +755,10 @@ private:
         bool done_climb;
     } rtl;
 
-    // last time home was updated while disarmed
+    // last time home was updated while disarmed 上次解锁时更新home位置的时间
     uint32_t last_home_update_ms;
 
-    // Camera/Antenna mount tracking and stabilisation stuff
+    // Camera/Antenna mount tracking and stabilisation stuff  相机/天线支架跟踪与稳定设备
 #if HAL_MOUNT_ENABLED
     AP_Mount camera_mount;
 #endif
@@ -771,26 +771,26 @@ private:
     static const AP_Scheduler::Task scheduler_tasks[];
     static const AP_Param::Info var_info[];
 
-    // time that rudder arming has been running
+    // time that rudder arming has been running 舵机解锁运行计时器
     uint32_t rudder_arm_timer;
 
 #if HAL_QUADPLANE_ENABLED
-    // support for quadcopter-plane
+    // support for quadcopter-plane 支持旋翼
     QuadPlane quadplane{ahrs};
 #endif
 
     // support for transmitter tuning
-    AP_Tuning_Plane tuning;
+    AP_Tuning_Plane tuning; // 发射器调谐辅助
 
     static const struct LogStructure log_structure[];
 
     // rudder mixing gain for differential thrust (0 - 1)
-    float rudder_dt;
+    float rudder_dt; // 差动推力 舵混合增益
 
     // soaring mode-change timer
-    uint32_t soaring_mode_timer_ms;
+    uint32_t soaring_mode_timer_ms; // 滑翔模式更改计时器
 
-    // terrain disable for non AUTO modes, set with an RC Option switch
+    // terrain disable for non AUTO modes, set with an RC Option switch 在非自动模式下禁用地形功能，使用RC选项开关设置
     bool non_auto_terrain_disable;
     bool terrain_disabled();
 #if AP_TERRAIN_AVAILABLE
@@ -1172,7 +1172,7 @@ private:
     static_assert(_failsafe_priorities[ARRAY_SIZE(_failsafe_priorities) - 1] == -1,
                   "_failsafe_priorities is missing the sentinel");
 
-    // EKF checks for loss of navigation performed in ekf_check.cpp
+    // EKF checks for loss of navigation performed in ekf_check.cpp  EKF在ekf_check.cpp中执行导航丢失检查
     // These are specific to VTOL operation
     void ekf_check();
     bool ekf_over_threshold();
