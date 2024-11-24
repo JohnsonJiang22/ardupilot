@@ -68,7 +68,7 @@ public:
         float seconds;          // period of delay in seconds
     };
 
-    // condition delay command structure
+    // condition Distance command structure
     struct PACKED Conditional_Distance_Command {
         float meters;           // distance from next waypoint in meters
     };
@@ -122,7 +122,7 @@ public:
         float yaw;              // yaw angle (relative to vehicle heading) in degrees
     };
 
-    // digicam control command structure
+    // digicam Configure command structure
     struct PACKED Digicam_Configure {
         uint8_t shooting_mode;  // ProgramAuto = 1, AV = 2, TV = 3, Man=4, IntelligentAuto=5, SuperiorAuto=6
         uint16_t shutter_speed;
@@ -176,12 +176,12 @@ public:
         float horiz_max;        // max horizontal distance the vehicle can move before the command will be aborted.  0 for no horizontal limit
     };
 
-    // do VTOL transition
+    // do VTOL transition  垂直起降（VTOL）飞行器的转换过程
     struct PACKED Do_VTOL_Transition {
         uint8_t target_state;
     };
 
-    // navigation delay command structure
+    // navigation delay command structure  可能涉及到飞行器的导航控制和任务规划中的延迟指令处理
     struct PACKED Navigation_Delay_Command {
         float seconds; // period of delay in seconds
         int8_t hour_utc; // absolute time's hour (utc)
@@ -203,7 +203,7 @@ public:
         uint8_t relative_angle; // 0 = absolute angle, 1 = relative angle
     };
 
-    // winch command structure
+    // winch command structure 绞车（Winch）控制
     struct PACKED Winch_Command {
         uint8_t num;            // winch number
         uint8_t action;         // action (0 = relax, 1 = length control, 2 = rate control)
@@ -236,6 +236,8 @@ public:
     };
 
     // MAV_CMD_DO_GIMBAL_MANAGER_PITCHYAW support
+    // 用于在Ardupilot软件中传递云台俯仰和偏航控制的指令。
+    // 当需要控制云台进行特定角度的俯仰或偏航运动时，可以构建并发送一个包含相应参数的gimbal_manager_pitchyaw_Command结构体给云台管理器
     struct PACKED gimbal_manager_pitchyaw_Command {
         int8_t pitch_angle_deg;
         int16_t yaw_angle_deg;

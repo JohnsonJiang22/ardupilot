@@ -564,6 +564,9 @@ public:
 
     // just to make compilation easier when all things are compiled out...
     uint8_t unused_integer;
+
+    // Custom parameters -JP 
+    AP_Int8   flg_send_WP_distance;
 };
 
 extern const AP_Param::Info var_info[];

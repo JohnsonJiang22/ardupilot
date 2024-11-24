@@ -1180,7 +1180,7 @@ void GCS_MAVLINK_Plane::handleMessage(const mavlink_message_t &msg)
 {
     switch (msg.msgid) {
 
-    case MAVLINK_MSG_ID_MANUAL_CONTROL:
+    case MAVLINK_MSG_ID_MANUAL_CONTROL:  // 允许地面控制站（GCS）或其他控制设备向无人机发送手动控制指令，如摇杆输入、姿态控制等。这些指令随后被无人机的飞控系统处理，以实现对无人机飞行状态的实时控制
     {
         if (msg.sysid != plane.g.sysid_my_gcs) {
             break; // only accept control from our gcs
@@ -1193,8 +1193,9 @@ void GCS_MAVLINK_Plane::handleMessage(const mavlink_message_t &msg)
             break; // only accept messages aimed at us
         }
 
-        uint32_t tnow = AP_HAL::millis();
+        uint32_t tnow = AP_HAL::millis(); // 自程序启动以来经过的毫秒数
 
+        // manual_override函数功能主要是：当飞行器处于某些自动模式（如自动航线飞行、定点悬停等）时，允许飞行员通过遥控器或其他手动控制设备接管飞行器的控制权
         manual_override(plane.channel_roll, packet.y, 1000, 2000, tnow);
         manual_override(plane.channel_pitch, packet.x, 1000, 2000, tnow, true);
         manual_override(plane.channel_throttle, packet.z, 0, 1000, tnow);
@@ -1202,25 +1203,25 @@ void GCS_MAVLINK_Plane::handleMessage(const mavlink_message_t &msg)
 
         // a manual control message is considered to be a 'heartbeat'
         // from the ground station for failsafe purposes
-        gcs().sysid_myggcs_seen(tnow);
+        gcs().sysid_myggcs_seen(tnow); // 可能是检查在当前时间戳 tnow 下，无人机是否已经“看见”或接收到其 GCS 的信息（基于 GCS 的系统ID）。这通常用于确保无人机与 GCS 之间的通信是活跃的，以及用于各种状态管理和超时检测逻辑
         break;
     }
 
-    case MAVLINK_MSG_ID_RADIO:
+    case MAVLINK_MSG_ID_RADIO: // 无线电台控制消息ID
     case MAVLINK_MSG_ID_RADIO_STATUS:
     {
         handle_radio_status(msg, plane.should_log(MASK_LOG_PM));
         break;
     }
 
-    case MAVLINK_MSG_ID_TERRAIN_DATA:
-    case MAVLINK_MSG_ID_TERRAIN_CHECK:
+    case MAVLINK_MSG_ID_TERRAIN_DATA: // 用于地形数据交换的MAVLink消息ID
+    case MAVLINK_MSG_ID_TERRAIN_CHECK: // 与地形检查相关的MAVLink消息ID
 #if AP_TERRAIN_AVAILABLE
         plane.terrain.handle_data(chan, msg);
 #endif
         break;
 
-    case MAVLINK_MSG_ID_SET_ATTITUDE_TARGET:
+    case MAVLINK_MSG_ID_SET_ATTITUDE_TARGET: // 用于设置飞行器姿态目标的消息ID
     {
         // Only allow companion computer (or other external controller) to
         // control attitude in GUIDED mode.  We DON'T want external control
@@ -1290,7 +1291,7 @@ void GCS_MAVLINK_Plane::handleMessage(const mavlink_message_t &msg)
         break;
     }
 
-    case MAVLINK_MSG_ID_SET_POSITION_TARGET_LOCAL_NED:
+    case MAVLINK_MSG_ID_SET_POSITION_TARGET_LOCAL_NED: // 用于设置本地NED(北东地)坐标系中目标位置的MAVLink消息ID
     {
         // decode packet
         mavlink_set_position_target_local_ned_t packet;
@@ -1314,7 +1315,7 @@ void GCS_MAVLINK_Plane::handleMessage(const mavlink_message_t &msg)
         break;
     }
 
-    case MAVLINK_MSG_ID_SET_POSITION_TARGET_GLOBAL_INT:
+    case MAVLINK_MSG_ID_SET_POSITION_TARGET_GLOBAL_INT: // 用于设定全局坐标系中位置目标的MAVLink消息ID
     {
         // Only want to allow companion computer position control when
         // in a certain mode to avoid inadvertently sending these

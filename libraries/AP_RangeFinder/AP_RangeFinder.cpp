@@ -56,6 +56,9 @@
 #include <AP_Logger/AP_Logger.h>
 #include <AP_Vehicle/AP_Vehicle_Type.h>
 
+// RangeFinder的含义是指测距仪的相关功能与实现的代码集合。
+// 它主要用于测量对地距离，在无人机等飞行器的地形跟随（Terrain Following）、表面跟踪（Surface Tracking）以及简单障碍物避障（Simple Object Avoidance）等应用中发挥着重要作用
+
 extern const AP_HAL::HAL &hal;
 
 // table of user settable parameters

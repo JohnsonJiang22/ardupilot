@@ -9,7 +9,7 @@ uint8_t GCS_Plane::sysid_this_mav() const
 void GCS_Plane::update_vehicle_sensor_status_flags(void)
 {
     // reverse thrust
-    if (plane.have_reverse_thrust()) {
+    if (plane.have_reverse_thrust()) {  // 判断飞行器（如固定翼飞机或多旋翼无人机）是否具备反向推力功能
         control_sensors_present |= MAV_SYS_STATUS_REVERSE_MOTOR;
     }
     if (plane.have_reverse_thrust() && is_negative(SRV_Channels::get_output_scaled(SRV_Channel::k_throttle))) {
@@ -98,7 +98,7 @@ void GCS_Plane::update_vehicle_sensor_status_flags(void)
         control_sensors_health |= MAV_SYS_STATUS_SENSOR_ATTITUDE_STABILIZATION;
     }
 
-#if AP_OPTICALFLOW_ENABLED
+#if AP_OPTICALFLOW_ENABLED // 光流功能
     const AP_OpticalFlow *optflow = AP::opticalflow();
     if (optflow && optflow->enabled()) {
         control_sensors_present |= MAV_SYS_STATUS_SENSOR_OPTICAL_FLOW;
@@ -116,15 +116,15 @@ void GCS_Plane::update_vehicle_sensor_status_flags(void)
         control_sensors_health |= MAV_SYS_STATUS_SENSOR_RC_RECEIVER;
     }
 
-#if AP_TERRAIN_AVAILABLE
+#if AP_TERRAIN_AVAILABLE  // 是否启用地形跟随功能
     switch (plane.terrain.status()) {
-    case AP_Terrain::TerrainStatusDisabled:
+    case AP_Terrain::TerrainStatusDisabled:  // 地形跟随关闭
         break;
-    case AP_Terrain::TerrainStatusUnhealthy:
+    case AP_Terrain::TerrainStatusUnhealthy: // 地形状态不正常
         control_sensors_present |= MAV_SYS_STATUS_TERRAIN;
         control_sensors_enabled |= MAV_SYS_STATUS_TERRAIN;
         break;
-    case AP_Terrain::TerrainStatusOK:
+    case AP_Terrain::TerrainStatusOK: // 地形状态正常
         control_sensors_present |= MAV_SYS_STATUS_TERRAIN;
         control_sensors_enabled |= MAV_SYS_STATUS_TERRAIN;
         control_sensors_health  |= MAV_SYS_STATUS_TERRAIN;
@@ -132,7 +132,7 @@ void GCS_Plane::update_vehicle_sensor_status_flags(void)
     }
 #endif
 
-    const RangeFinder *rangefinder = RangeFinder::get_singleton();
+    const RangeFinder *rangefinder = RangeFinder::get_singleton();  // 测距功能
     if (rangefinder && rangefinder->has_orientation(ROTATION_PITCH_270)) {
         control_sensors_present |= MAV_SYS_STATUS_SENSOR_LASER_POSITION;
         if (plane.g.rangefinder_landing) {

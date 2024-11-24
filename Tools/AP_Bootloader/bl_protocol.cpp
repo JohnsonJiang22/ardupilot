@@ -188,8 +188,7 @@ static void delay(unsigned msec)
     chThdSleep(chTimeMS2I(msec));
 }
 
-void
-led_set(enum led_state state)
+void led_set(enum led_state state)
 {
     led_state = state;
 

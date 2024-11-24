@@ -20,9 +20,13 @@ protected:
     uint8_t sysid_my_gcs() const override;
     bool sysid_enforce() const override;
 
-    MAV_RESULT handle_command_preflight_calibration(const mavlink_command_long_t &packet) override;
+    // handle_command_preflight_calibration()函数主要是处理与飞行前校准相关的命令，接收校准命令、执行校准过程、反馈校准状态
+    MAV_RESULT handle_command_preflight_calibration(const mavlink_command_long_t &packet) override; 
+    // 主要目的是处理从地面控制站或其他外部系统（如 MAVLink 协议的设备）发送的 MAVLink 命令整数数据包（COMMAND_INT 消息）
     MAV_RESULT handle_command_int_packet(const mavlink_command_int_t &packet) override;
+    // 用于处理来自地面控制站或其他来源的长格式命令数据包,长格式数据包（通常称为“command long”或“MAV_CMD_LONG”）
     MAV_RESULT handle_command_long_packet(const mavlink_command_long_t &packet) override;
+    // 处理一个特定的命令，该命令要求设置或更改当前任务（mission）的某个状态或参数
     MAV_RESULT handle_command_do_set_mission_current(const mavlink_command_long_t &packet) override;
 
     void send_position_target_global_int() override;
@@ -77,7 +81,7 @@ private:
     uint8_t last_hygrometer_send_idx;
 #endif
 
-    MAV_VTOL_STATE vtol_state() const override;
-    MAV_LANDED_STATE landed_state() const override;
+    MAV_VTOL_STATE vtol_state() const override; 
+    MAV_LANDED_STATE landed_state() const override;  // 着陆阶段
 
 };

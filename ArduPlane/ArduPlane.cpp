@@ -348,9 +348,13 @@ void Plane::one_second_loop()
         INTERNAL_ERROR(AP_InternalError::error_t::flow_of_control);
     }
 
-    gcs().send_text(MAV_SEVERITY_CRITICAL, 
-        "ArduPlane WP_distance: %.1fm", 
-            auto_state.wp_distance);
+    // 通过地面站修改 FLG_TX_WP_DIS 标志变量的值，可打开或关闭地面站仪表盘显示距下一个航点距离的信息
+    if(g2.flg_send_WP_distance == ENABLE)
+    {
+        gcs().send_text(MAV_SEVERITY_CRITICAL, 
+            "ArduPlane WP_distance: %.1fm", 
+                auto_state.wp_distance);
+    }
 }
 
 void Plane::three_hz_loop()

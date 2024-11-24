@@ -1151,9 +1151,9 @@ protected:
     virtual GCS_MAVLINK *new_gcs_mavlink_backend(GCS_MAVLINK_Parameters &params,
                                                  AP_HAL::UARTDriver &uart) = 0;
 
-    uint32_t control_sensors_present;
-    uint32_t control_sensors_enabled;
-    uint32_t control_sensors_health;
+    uint32_t control_sensors_present; // 用于标识当前系统中已连接或可用的控制传感器的变量
+    uint32_t control_sensors_enabled; // 用于标识当前系统中已连接或可用的控制传感器的使能状态
+    uint32_t control_sensors_health;  // 用于标识当前系统中已连接或可用的控制传感器的健康状态
     virtual void update_vehicle_sensor_status_flags() {}
 
     GCS_MAVLINK_Parameters chan_parameters[MAVLINK_COMM_NUM_BUFFERS];

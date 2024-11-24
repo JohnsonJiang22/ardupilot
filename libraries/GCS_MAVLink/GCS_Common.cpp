@@ -3651,7 +3651,7 @@ void GCS_MAVLINK::handle_common_message(const mavlink_message_t &msg)
         break;
     }
 
-    case MAVLINK_MSG_ID_SETUP_SIGNING:
+    case MAVLINK_MSG_ID_SETUP_SIGNING: // 与MAVLink协议的消息签名设置相关
         handle_setup_signing(msg);
         break;
 
@@ -4677,7 +4677,7 @@ MAV_RESULT GCS_MAVLINK::handle_command_long_packet(const mavlink_command_long_t 
         result = handle_flight_termination(packet);
         break;
 
-    case MAV_CMD_COMPONENT_ARM_DISARM:
+    case MAV_CMD_COMPONENT_ARM_DISARM: // 飞行控制器会解析该命令并根据其参数执行相应的解锁或锁定操作
         result = handle_command_component_arm_disarm(packet);
         break;
 
