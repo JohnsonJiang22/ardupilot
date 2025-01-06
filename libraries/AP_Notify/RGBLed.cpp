@@ -23,16 +23,19 @@
 
 extern const AP_HAL::HAL& hal;
 
+// 此函数是用来初始化LED的不同状态（关闭、亮、适中和暗）
+// 例如_led_off(led_off)的作用是将传入构造函数的参数led_off的值赋给类的成员变量_led_off
 RGBLed::RGBLed(uint8_t led_off, uint8_t led_bright, uint8_t led_medium, uint8_t led_dim):
-    _led_off(led_off),
-    _led_bright(led_bright),
-    _led_medium(led_medium),
-    _led_dim(led_dim)
+    _led_off(led_off), // 关闭
+    _led_bright(led_bright), // 亮
+    _led_medium(led_medium), // 适中
+    _led_dim(led_dim) // 暗
 {
 
 }
 
 // set_rgb - set color as a combination of red, green and blue values
+// 检查输入的RGB值是否和当前设置的颜色不同，如果不同则调用hw_set_rgb（一个底层硬件更新函数）更新硬件，并更新当前颜色值。这样做避免了不必要的硬件调用
 void RGBLed::_set_rgb(uint8_t red, uint8_t green, uint8_t blue)
 {
     if (red != _red_curr ||
@@ -47,12 +50,14 @@ void RGBLed::_set_rgb(uint8_t red, uint8_t green, uint8_t blue)
     }
 }
 
+// 返回当前RGB LED的颜色来源类型，比如标准、MAVLink、交通灯模式等。pNotify是一个通知对象，包含了当前系统状态
 RGBLed::rgb_source_t RGBLed::rgb_source() const
 {
     return rgb_source_t(pNotify->_rgb_led_override.get());
 }
 
 // set_rgb - set color as a combination of red, green and blue values
+// 如果RGB LED的来源是MAVLink（意味着外部命令覆盖），则不执行颜色设置；否则调用_set_rgb设置颜色
 void RGBLed::set_rgb(uint8_t red, uint8_t green, uint8_t blue)
 {
     if (rgb_source() == mavlink) {
@@ -62,6 +67,9 @@ void RGBLed::set_rgb(uint8_t red, uint8_t green, uint8_t blue)
     _set_rgb(red, green, blue);
 }
 
+// 根据内部状态和外部条件（如是否通过USB连接），计算并返回当前应该设置的LED亮度值。它通过查阅pNotify对象中的亮度设置以及其他条件（如USB连接状态），来确定具体的亮度值。
+// 定义了一个局部变量brightness，初始值设置为类成员变量_led_bright的值，这个变量代表最亮的亮度。
+// pNotify是一个指向某个对象的指针，该对象包含有关于LED亮度的信息。_rgb_led_brightness是这个对象的成员变量，表示当前LED的亮度设置
 uint8_t RGBLed::get_brightness(void) const
 {
     uint8_t brightness = _led_bright;
@@ -88,6 +96,7 @@ uint8_t RGBLed::get_brightness(void) const
     return brightness;
 }
 
+// 返回OBC模式下的颜色序列，主要根据系统是否ARM（武装）状态设置为红色或绿色
 uint32_t RGBLed::get_colour_sequence_obc(void) const
 {
     if (AP_Notify::flags.armed) {
@@ -97,6 +106,7 @@ uint32_t RGBLed::get_colour_sequence_obc(void) const
 }
 
 // _scheduled_update - updates _red, _green, _blue according to notify flags
+// 通过读取不同的系统状态标志（如初始化、校准、故障、武装状态等），决定LED的颜色显示模式。每种模式对应不同的颜色序列，通常用于向用户提供关于系统状态的视觉反馈
 uint32_t RGBLed::get_colour_sequence(void) const
 {
     // initialising pattern
@@ -161,6 +171,7 @@ uint32_t RGBLed::get_colour_sequence(void) const
     return sequence_disarmed_bad_gps;
 }
 
+// 返回“交通灯”模式的颜色序列，用于指示初始状态、ARM状态和安全开关状态等
 uint32_t RGBLed::get_colour_sequence_traffic_light(void) const
 {
     if (AP_Notify::flags.initialising) {
@@ -187,38 +198,43 @@ uint32_t RGBLed::get_colour_sequence_traffic_light(void) const
 
 // update - updates led according to timed_updated.  Should be called
 // at 50Hz
-void RGBLed::update()
+// 根据当前的LED模式选择合适的颜色序列，然后根据时间步长和亮度设置LED的颜色。通过这种方式，可以实现多种不同的LED显示效果，例如根据系统状态显示不同的颜色，
+// 或者在交通信号灯模式下显示不同的颜色序列
+void RGBLed::update() // RGBLed::: 这是 RGBLed 类的成员函数
 {
-    uint32_t current_colour_sequence = 0;
+    uint32_t current_colour_sequence = 0; // 存储当前颜色序列的编码
 
-    switch (rgb_source()) {
-    case mavlink:
+    switch (rgb_source()) { // 根据 rgb_source() 函数返回的LED模式来选择不同的更新逻辑
+    case mavlink: // 如果当前模式是 MAVLink，那么调用 update_override() 函数更新LED状态，然后返回（终止函数执行），不继续后面的代码
         update_override();
         return; // note this is a return not a break!
-    case standard:
+    case standard: // 如果当前模式是标准模式，调用 get_colour_sequence() 函数获取颜色序列，并将其赋值给 current_colour_sequence
         current_colour_sequence = get_colour_sequence();
         break;
-    case obc:
+    case obc: // 如果当前模式是 OBC（机载计算机），调用 get_colour_sequence_obc() 函数获取颜色序列，并将其赋值给 current_colour_sequence
         current_colour_sequence = get_colour_sequence_obc();
         break;
-    case traffic_light:
+    case traffic_light: // 如果当前模式是交通信号灯模式，调用 get_colour_sequence_traffic_light() 函数获取颜色序列，并将其赋值给 current_colour_sequence
         current_colour_sequence = get_colour_sequence_traffic_light();
         break;
     }
 
-    const uint8_t brightness = get_brightness();
+    const uint8_t brightness = get_brightness(); // 获取亮度：返回当前的亮度值，根据系统状态（如是否通过USB连接）来调整亮度
 
-    uint8_t step = (AP_HAL::millis()/100) % 10;
+    uint8_t step = (AP_HAL::millis()/100) % 10; // 计算时间步长：%10操作的含义是：对结果取模10，将步长限制在0到9之间，用于确定当前显示的颜色
 
     // ensure we can't skip a step even with awful timing
-    if (step != last_step) {
-        step = (last_step+1) % 10;
-        last_step = step;
+    if (step != last_step) { // 如果当前步长与上一个步长不同
+        step = (last_step+1) % 10; // 计算下一个步长，并将其限制在0到9之间，防止跳过步骤
+        last_step = step; // 更新上一个步长为当前步长
     }
 
-    const uint8_t colour = (current_colour_sequence >> (step*3)) & 7;
+    // 计算颜色：将颜色序列右移 (step*3) 位，以提取当前步长对应的颜色。每个颜色占3位（RGB），因此移动的位数为步长乘以3
+    // & 7: 将结果与7（00000111）进行按位与操作，提取出当前颜色的值
+    const uint8_t colour = (current_colour_sequence >> (step*3)) & 7; 
 
-    uint8_t red_des = (colour & RED) ? brightness : _led_off;
+    // 更新LED颜色
+    uint8_t red_des = (colour & RED) ? brightness : _led_off; // 目标红色分量。如果 colour & RED 为真（非零），则设置为当前亮度 brightness，否则设置为 _led_off（LED关闭）
     uint8_t green_des = (colour & GREEN) ? brightness : _led_off;
     uint8_t blue_des = (colour & BLUE) ? brightness : _led_off;
 
@@ -228,6 +244,7 @@ void RGBLed::update()
 /*
   handle LED control, only used when LED_OVERRIDE=1
 */
+// 处理来自 MAVLink 消息的 LED 控制命令，如果当前模式为 MAVLink 则解码并设置 LED 的控制参数
 void RGBLed::handle_led_control(const mavlink_message_t &msg)
 {
     if (rgb_source() != mavlink) {
@@ -263,6 +280,7 @@ void RGBLed::handle_led_control(const mavlink_message_t &msg)
 /*
   update LED when in override mode
  */
+// 根据 rate_hz 和当前时间更新 LED 的状态，支持闪烁和固态显示
 void RGBLed::update_override(void)
 {
     if (_led_override.rate_hz == 0) {
@@ -285,6 +303,7 @@ void RGBLed::update_override(void)
   RGB control
   give RGB and flash rate, used with scripting
 */
+// 设置 LED 的 RGB 颜色和闪烁频率，用于脚本控制或外部指令
 void RGBLed::rgb_control(uint8_t r, uint8_t g, uint8_t b, uint8_t rate_hz)
 {
     _led_override.rate_hz = rate_hz;

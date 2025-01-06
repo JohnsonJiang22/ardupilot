@@ -57,9 +57,12 @@ void Plane::init_ardupilot()
     // init baro
     barometer.init();
 
-    // initialise rangefinder
+    // initialise rangefinder  初始化测距仪
     rangefinder.set_log_rfnd_bit(MASK_LOG_SONAR);
-    rangefinder.init(ROTATION_PITCH_270);
+
+    // rangefinder类是在\libraries\AP_Vehicle\AP_Vehicle.h调用RangeFinder 类定义了 rangefinder 对象
+    // 此处init()函数实际上运行的是跳转到\libraries\AP_RangeFinder\AP_RangeFinder.cpp中 RangeFinder 类的 init() 函数
+    rangefinder.init(ROTATION_PITCH_270); 
 
     // initialise battery monitoring
     battery.init();

@@ -285,12 +285,13 @@ void RangeFinder::init(enum Rotation orientation_default)
         // serial_instance will be increased inside detect_instance
         // if a serial driver is loaded for this instance
         WITH_SEMAPHORE(detect_sem);
-        detect_instance(i, serial_instance);
+        detect_instance(i, serial_instance); // 检测是否连接了测距仪实例
         if (drivers[i] != nullptr) {
             // we loaded a driver for this instance, so it must be
             // present (although it may not be healthy). We use MAX()
             // here as a UAVCAN rangefinder may already have been
             // found
+            // 我们为这个实例加载了一个驱动程序，所以它必须存在（尽管它可能不是健康的）。我们在这里使用MAX()是因为可能已经找到了一个UAVCAN测距仪
             num_instances = MAX(num_instances, i+1);
         }
 
@@ -314,7 +315,7 @@ void RangeFinder::update(void)
                 state[i].range_valid_count = 0;
                 continue;
             }
-            drivers[i]->update();
+            drivers[i]->update();  // 实际调用的是测距仪传感器类中的update函数，比如AP_RangeFinder_VL53L0CX 类中的 update() 函数
         }
     }
 #if HAL_LOGGING_ENABLED
@@ -334,7 +335,7 @@ bool RangeFinder::_add_backend(AP_RangeFinder_Backend *backend, uint8_t instance
         // we've allocated the same instance twice
         INTERNAL_ERROR(AP_InternalError::error_t::flow_of_control);
     }
-    backend->init_serial(serial_instance);
+    backend->init_serial(serial_instance); // 实现于\libraries\AP_RangeFinder\AP_RangeFinder_Backend_Serial.cpp中
     drivers[instance] = backend;
     num_instances = MAX(num_instances, instance+1);
 
@@ -343,6 +344,8 @@ bool RangeFinder::_add_backend(AP_RangeFinder_Backend *backend, uint8_t instance
 
 /*
   detect if an instance of a rangefinder is connected. 
+  前端代码通过本函数指定通信设备的地址并对通信设备实例对象进行初始化
+  此处的通信设备后端有：串口、IIC、SPI三种设备可以选择，通过RNGFND1_TYPE变更进行定义
  */
 void RangeFinder::detect_instance(uint8_t instance, uint8_t& serial_instance)
 {
@@ -369,9 +372,9 @@ void RangeFinder::detect_instance(uint8_t instance, uint8_t& serial_instance)
         if (params[instance].address != 0) {
             addr = params[instance].address;
         }
-        FOREACH_I2C(i) {
+        FOREACH_I2C(i) { // hal.i2c_mgr->get_device(): 通过指定IIC地址在总线上得到对应设备，get_device()函数定义在\libraries\AP_HAL\I2CDevice.h文件中，最终调用的实现在\libraries\AP_HAL_ChibiOS\I2CDevice.cpp中
             if (_add_backend(AP_RangeFinder_MaxsonarI2CXL::detect(state[instance], params[instance],
-                                                                  hal.i2c_mgr->get_device(i, addr)),
+                                                                  hal.i2c_mgr->get_device(i, addr)), 
                              instance)) {
                 break;
             }
@@ -418,7 +421,7 @@ void RangeFinder::detect_instance(uint8_t instance, uint8_t& serial_instance)
     case Type::VL53L0X:
     case Type::VL53L1X_Short:
             FOREACH_I2C(i) {
-#if AP_RANGEFINDER_VL53L0X_ENABLED
+#if AP_RANGEFINDER_VL53L0X_ENABLED // detect()函数实际调用的是对应的传感器（这里是VL53L0X)的.cpp文件中，功能是为检测是否连接了 VL53L0X 测距仪。将通过 I2C 读取数据来进行检测。如果得到结果，则表示传感器已连接。
                 if (_add_backend(AP_RangeFinder_VL53L0X::detect(state[instance], params[instance],
                                                                 hal.i2c_mgr->get_device(i, params[instance].address)),
                         instance)) {

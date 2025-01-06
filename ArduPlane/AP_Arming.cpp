@@ -1,4 +1,5 @@
 /*
+    实现固定翼加解锁检测
   additional arming checks for plane
  */
 #include "AP_Arming.h"

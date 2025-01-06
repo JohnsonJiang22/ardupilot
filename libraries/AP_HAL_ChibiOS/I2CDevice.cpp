@@ -442,7 +442,7 @@ I2CDeviceManager::get_device(uint8_t bus, uint8_t address,
     if (bus >= ARRAY_SIZE(I2CD)) {
         return AP_HAL::OwnPtr<AP_HAL::I2CDevice>(nullptr);
     }
-    auto dev = AP_HAL::OwnPtr<AP_HAL::I2CDevice>(new I2CDevice(bus, address, bus_clock, use_smbus, timeout_ms));
+    auto dev = AP_HAL::OwnPtr<AP_HAL::I2CDevice>(new I2CDevice(bus, address, bus_clock, use_smbus, timeout_ms)); // new 一个新的 I2CDevice 类对象返回
     return dev;
 }
 

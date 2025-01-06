@@ -43,7 +43,7 @@ bool gcs_alternative_active[MAVLINK_COMM_NUM_BUFFERS];
 static HAL_Semaphore chan_locks[MAVLINK_COMM_NUM_BUFFERS];
 static bool chan_discard[MAVLINK_COMM_NUM_BUFFERS];
 
-mavlink_system_t mavlink_system = {7,1};
+mavlink_system_t mavlink_system = {7,1}; // 默认sysid=7,compid=1
 
 // routing table
 MAVLink_routing GCS_MAVLINK::routing;

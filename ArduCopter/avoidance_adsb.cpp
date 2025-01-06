@@ -1,6 +1,8 @@
 #include "Copter.h"
 #include <AP_Notify/AP_Notify.h>
 
+// 负责处理ADS-B信号，以实现无人机的避障功能
+
 #if HAL_ADSB_ENABLED
 void Copter::avoidance_adsb_update(void)
 {

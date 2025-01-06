@@ -580,7 +580,7 @@ void AP_SerialManager::init()
     }
 }
 
-
+// 在给定的协议和实例编号下，寻找并返回一个与特定通信协议相关联的实例
 const AP_SerialManager::UARTState *AP_SerialManager::find_protocol_instance(enum SerialProtocol protocol, uint8_t instance) const
 {
     uint8_t found_instance = 0;
@@ -618,7 +618,7 @@ AP_HAL::UARTDriver *AP_SerialManager::find_serial(enum SerialProtocol protocol, 
     return port;
 }
 
-// have_serial - return true if we have the given serial protocol configured
+// have_serial - return true if we have the given serial protocol configured 如果已配置给定的串行协议，则返回true
 bool AP_SerialManager::have_serial(enum SerialProtocol protocol, uint8_t instance) const
 {
     return find_protocol_instance(protocol, instance) != nullptr;

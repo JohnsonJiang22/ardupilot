@@ -229,7 +229,7 @@ AP_RangeFinder_Backend *AP_RangeFinder_VL53L0X::detect(RangeFinder::RangeFinder_
 		return nullptr;
 	}
     AP_RangeFinder_VL53L0X *sensor
-        = new AP_RangeFinder_VL53L0X(_state, _params, std::move(dev));
+        = new AP_RangeFinder_VL53L0X(_state, _params, std::move(dev)); // new 一个 AP_RangeFinder_VL53L0X 类对象
 
     if (!sensor) {
         delete sensor;
@@ -238,7 +238,7 @@ AP_RangeFinder_Backend *AP_RangeFinder_VL53L0X::detect(RangeFinder::RangeFinder_
 
     sensor->dev->get_semaphore()->take_blocking();
     
-    if (!sensor->check_id() || !sensor->init()) {
+    if (!sensor->check_id() || !sensor->init()) { // 先读取测距仪固有的产品 ID 是否正确(sensor->check_id())，若正确，则再对测距仪进行必要的初始化(sensor->init())
         sensor->dev->get_semaphore()->give();
         delete sensor;
         return nullptr;
@@ -249,7 +249,7 @@ AP_RangeFinder_Backend *AP_RangeFinder_VL53L0X::detect(RangeFinder::RangeFinder_
     return sensor;
 }
 
-// check sensor ID registers
+// check sensor ID registers 检查测距仪 ID 寄存器。每种类型测距仪的 ID 寄存器都有唯一值
 bool AP_RangeFinder_VL53L0X::check_id(void)
 {
     uint8_t v1, v2;
@@ -552,6 +552,7 @@ bool AP_RangeFinder_VL53L0X::setMeasurementTimingBudget(uint32_t budget_us)
     return true;
 }
 
+// 初始化传感器，并注册测距仪的周期运行函数 timer()
 bool AP_RangeFinder_VL53L0X::init()
 {
     // setup for 2.8V operation
@@ -774,6 +775,7 @@ void AP_RangeFinder_VL53L0X::update(void)
     }
 }
 
+// 33ms 调用一次该函数，读取测距仪的测量值
 void AP_RangeFinder_VL53L0X::timer(void)
 {
     uint16_t range_mm;

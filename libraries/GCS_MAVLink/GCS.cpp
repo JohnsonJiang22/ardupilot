@@ -50,7 +50,7 @@ const MAV_MISSION_TYPE GCS_MAVLINK::supported_mission_types[] = {
 
 void GCS::init()
 {
-    mavlink_system.sysid = sysid_this_mav();
+    mavlink_system.sysid = sysid_this_mav(); // 这段代码就是设置mavlink的系统编号来保证地面站能够正确识别自己(设置MAVLink v2帧格式中的SYSID块)
 }
 
 /*

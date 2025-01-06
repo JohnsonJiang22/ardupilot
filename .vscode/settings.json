@@ -29,7 +29,10 @@
         "compare": "cpp",
         "cstdint": "cpp",
         "*.tcc": "cpp",
-        "typeinfo": "cpp"
+        "typeinfo": "cpp",
+        "mavlink_types.h": "c",
+        "cmath": "cpp",
+        "numeric": "cpp"
     },
     // 切换到当前工作目录
     "terminal.integrated.env.windows": {
@@ -40,10 +43,10 @@
     "files.exclude": {
         "AntennaTracker/": true,
         "ArduCopter/": false,  // 如果使用的是多旋翼固件，则将此文件夹的隐藏设置为"false" 
-        "Rover/": true,
+        "Rover/": false,
         "ArduPlane/": false,
         "Blimp/":true,
-        "ArduSub/": true,
+        "ArduSub/": false,
         "build/": false,
         "docs/": true,
         "logs/": true,

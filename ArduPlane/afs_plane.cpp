@@ -1,4 +1,5 @@
 /*
+    固定翼定义的一些高级故障保护类
   plane specific AP_AdvancedFailsafe class
  */
 

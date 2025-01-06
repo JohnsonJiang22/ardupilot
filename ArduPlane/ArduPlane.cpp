@@ -25,6 +25,9 @@
 #define SCHED_TASK(func, rate_hz, max_time_micros, priority) SCHED_TASK_CLASS(Plane, &plane, func, rate_hz, max_time_micros, priority)
 #define FAST_TASK(func) FAST_TASK_CLASS(Plane, &plane, func)
 
+// APM中MAVLINK的传输和控制主要实现在libraries/GCS_MAVLINK以及对应的载具文件夹下（如ArduPlane/）
+// (1)在libraries下面，各个文件夹表示不同的库模块，其中各自库中与库重名的文件往往是作为库内文件与车辆上层的前端而存在，
+// (2)在载具文件夹下面，对应的GCS.h/.cpp和GCS_Mavlink.h/.cpp文件是作为上层，它们继承了库中实现的类和相应的功能，并以此为基础派生出专属于具体车辆类型的函数及功能（简单来说就是继承了库中的基类由此得到的派生类）
 
 /*
   scheduler table - all regular tasks should be listed here.
@@ -75,13 +78,13 @@ const AP_Scheduler::Task Plane::scheduler_tasks[] = {
     SCHED_TASK(afs_fs_check,           10,    100,  51),
 #endif
     SCHED_TASK(ekf_check,              10,     75,  54),
-    SCHED_TASK_CLASS(GCS,            (GCS*)&plane._gcs,       update_receive,   300,  500,  57),
+    SCHED_TASK_CLASS(GCS,            (GCS*)&plane._gcs,       update_receive,   300,  500,  57), // 在\libraries\GCS_MAVLink\GCS_Common.cpp中实现
     SCHED_TASK_CLASS(GCS,            (GCS*)&plane._gcs,       update_send,      300,  750,  60),
     SCHED_TASK_CLASS(AP_ServoRelayEvents, &plane.ServoRelayEvents, update_events, 50, 150,  63),
     SCHED_TASK_CLASS(AP_BattMonitor, &plane.battery, read,   10, 300,  66),
     SCHED_TASK_CLASS(AP_Baro, &plane.barometer, accumulate,  50, 150,  69),
     SCHED_TASK_CLASS(AP_Notify,      &plane.notify,  update, 50, 300,  72),
-    SCHED_TASK(read_rangefinder,       50,    100, 78),
+    SCHED_TASK(read_rangefinder,       50,    100, 78), // 在\ArduPlane\sensors.cpp中，read_rangefinder()调用rangefinder.update()函数, 以厘米为单位返回测距仪高度
 #if AP_ICENGINE_ENABLED
     SCHED_TASK_CLASS(AP_ICEngine,      &plane.g2.ice_control, update,     10, 100,  81),
 #endif
@@ -313,8 +316,9 @@ void Plane::one_second_loop()
                                   (float)((aparm.airspeed_max - aparm.airspeed_min)/2));
     }
 
-    // sync MAVLink system ID
-    mavlink_system.sysid = g.sysid_this_mav;
+    // sync MAVLink system ID  
+    // 同步MAVLink sysid，sysid_this_mav值在Parameters.cpp中赋值，会同步修改\libraries\GCS_MAVLink\GCS_MAVLink.cpp中的mavlink_system数组
+    mavlink_system.sysid = g.sysid_this_mav; 
 
     SRV_Channels::enable_aux_servos();
 
@@ -348,7 +352,7 @@ void Plane::one_second_loop()
         INTERNAL_ERROR(AP_InternalError::error_t::flow_of_control);
     }
 
-    // 通过地面站修改 FLG_TX_WP_DIS 标志变量的值，可打开或关闭地面站仪表盘显示距下一个航点距离的信息
+    // JP-通过地面站修改 FLG_TX_WP_DIS 标志变量的值，可打开或关闭地面站仪表盘显示距下一个航点距离的信息
     if(g2.flg_send_WP_distance == ENABLE)
     {
         gcs().send_text(MAV_SEVERITY_CRITICAL, 
@@ -629,9 +633,6 @@ void Plane::update_flight_stage(void)
 #endif
     set_flight_stage(AP_Vehicle::FixedWing::FLIGHT_NORMAL);
 }
-
-
-
 
 /*
     If land_DisarmDelay is enabled (non-zero), check for a landing then auto-disarm after time expires

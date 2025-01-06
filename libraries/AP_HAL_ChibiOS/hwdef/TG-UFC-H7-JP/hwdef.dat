@@ -1,40 +1,41 @@
 # hw definition file for processing by chibios_hwdef.py for RocDrone H7
 
-# MCU class and specific type
+# MCU class and specific type 定义主控制器型号
 MCU STM32H7xx STM32H743xx
 
-# crystal frequency
+# crystal frequency 硬件上使用的晶振频率
 OSCILLATOR_HZ 16000000
 
-# board ID for firmware load
+# board ID for firmware load 板子ID，与bootloader保持一致
 APJ_BOARD_ID 660
 
+# flash size
 FLASH_SIZE_KB 2048
 
-# with 2M flash we can afford to optimize for speed
+# with 2M flash we can afford to optimize for speed 允许优化单片机速度，优化等级
 env OPTIMIZE -O2
 
-# ChibiOS system timer
+# ChibiOS system timer 系统所用为timer2
 STM32_ST_USE_TIMER 2
 
-# bootloader takes first sector
+# bootloader takes first sector  引导程序预留的内存大小 与hwdef-bl.dat保持一致
 FLASH_RESERVE_START_KB 128
 
-# order of UARTs (and USB)
+# order of UARTs (and USB) 串口顺序 serial0 - 7
 SERIAL_ORDER OTG1 USART2 USART3 UART4 UART8 UART7 OTG2
 
 # default the 2nd interface to MAVLink2 until MissionPlanner updates drivers
 define HAL_OTG2_PROTOCOL SerialProtocol_MAVLink2
 
-# now we define the pins that USB is connected on
+# now we define the pins that USB is connected on 定义USB引脚
 PA11 OTG_FS_DM OTG1
 PA12 OTG_FS_DP OTG1
 
-# these are the pins for SWD debugging with a STlinkv2 or black-magic probe
+# these are the pins for SWD debugging with a STlinkv2 or black-magic probe 定义SWD接口引脚
 PA13 JTMS-SWDIO SWD
 PA14 JTCK-SWCLK SWD
 
-# SPI1 - internal imu sensors, BMI088 ICM-20649
+# SPI1 - internal imu sensors, BMI088 ICM-20649 定义SPI1 内部传感器引脚
 PA5 SPI1_SCK SPI1
 PA6 SPI1_MISO SPI1
 PA7 SPI1_MOSI SPI1
@@ -49,6 +50,7 @@ PE12 SPI4_SCK SPI4
 PE13 SPI4_MISO SPI4
 PE14 SPI4_MOSI SPI4
 
+# sensor CS 定义各个传感器SPI的使能引脚
 PA4  ICM20649_CS CS SPEED_VERYLOW
 PB2  BMI088_A_CS CS
 PB1  BMI088_G_CS CS
@@ -57,7 +59,7 @@ PE15 MS5611_CS CS
 
 # I2C buses
 
-# I2C1 for onboard mag
+# I2C1 for onboard mag 定义I2C1的接口引脚，此处为板载磁力计
 PB6 I2C1_SCL I2C1
 PB7 I2C1_SDA I2C1
 
@@ -65,12 +67,13 @@ PB7 I2C1_SDA I2C1
 PB10 I2C2_SCL I2C2
 PB11 I2C2_SDA I2C2
 
-# order of I2C buses
+# order of I2C buses 定义I2C的顺序
 I2C_ORDER I2C1 I2C2
 
+# 外部I2C总线的总线掩码
 define HAL_I2C_INTERNAL_MASK 1
-
-# enable pins
+ 
+# enable pins  电源使能引脚 
 PB4 VDD_3V3_SENSORS_EN OUTPUT LOW
 PB3 VDD_3V3_SD_CARD_EN OUTPUT HIGH
 
@@ -94,7 +97,7 @@ PE1 UART8_TX UART8
 PE7 UART7_RX UART7 NODMA
 PE8 UART7_TX UART7 NODMA
 
-# PWM channels
+# PWM channels 定义PWM输出的引脚 如果要支持DSHOT数字电调协议 timer io必须支持DMA才行
 PA0  TIM5_CH1 TIM5 PWM(1) GPIO(50)
 PA1  TIM5_CH2 TIM5 PWM(2) GPIO(51)
 PA2  TIM5_CH3 TIM5 PWM(3) GPIO(52)
@@ -106,55 +109,60 @@ PD15 TIM4_CH4 TIM4 PWM(8) GPIO(57)
 
 PE9  TIM1_CH1  TIM1  PWM(9)  GPIO(58)
 PE11 TIM1_CH2  TIM1  PWM(10) GPIO(59)
-PB14 TIM12_CH1 TIM12 PWM(11) GPIO(62) NODMA
-PB15 TIM12_CH2 TIM12 PWM(12) GPIO(63) NODMA
-PE5  TIM15_CH1 TIM15 PWM(13) GPIO(64)
-PE6  TIM15_CH2 TIM15 PWM(14) GPIO(65)
+PB14 TIM12_CH1 TIM12 PWM(11) GPIO(60) NODMA
+PB15 TIM12_CH2 TIM12 PWM(12) GPIO(61) NODMA
+PE5  TIM15_CH1 TIM15 PWM(13) GPIO(62)
+PE6  TIM15_CH2 TIM15 PWM(14) GPIO(63)
 
-# allow for 14 PWMs by default
-define BOARD_PWM_COUNT_DEFAULT 14
+# allow for 14 PWMs by default 默认允许14路PWM
+define BOARD_PWM_COUNT_DEFAULT 14 
 
-# RC input
-PC6 TIM3_CH1 TIM3 RCININT PULLUP LOW 
+# PWM output for buzzer   定义蜂鸣器输出引脚，未用到
+# PE5 TIM15_CH1 TIM15 GPIO(77) ALARM
+
+# RC input 定义遥控输入引脚 
+PC6 TIM3_CH1 TIM3 RCININT PULLDOWN LOW 
 
 # analog in
-PC4 BATT_VOLTAGE_SENS ADC1 SCALE(1)
-PB0 VDD_5V_SENS ADC1 SCALE(2)
+PC4 BATT_VOLTAGE_SENS ADC1 SCALE(1)  # 定义模拟输入引脚 PC4测电池电压
+PB0 VDD_5V_SENS ADC1 SCALE(2)        # 定义5V传感器电源测量ADC引脚
 
-# ADC3.3/ADC6.6
+# ADC3.3/ADC6.6  定义3.3V/6.6V电源测量引脚
 PC5 SPARE1_ADC1 ADC1 SCALE(1)
-PC0 SPARE2_ADC1 ADC1 SCALE(2)
+PC0 SPARE2_ADC1 ADC1 SCALE(1)
 
 # CAN bus
 PB8 CAN1_RX CAN1
 PB9 CAN1_TX CAN1
 
-# 2nd CAN bus
+# 2nd CAN bus. Cannot be used at same time as USB_HS
 PB12 CAN2_RX CAN2
 PB13 CAN2_TX CAN2
 
+# GPIOs
 PA9  nVBUS INPUT PULLUP
-
-# SPI devices
+ 
+# SPI devices  定义SPI上所接传感器类型 SPI使能引脚 SPI模式 速度
 SPIDEV icm20649       SPI1 DEVID1  ICM20649_CS     MODE3  2*MHZ  8*MHZ
 SPIDEV bmi088_a       SPI1 DEVID2  BMI088_A_CS     MODE3  10*MHZ 10*MHZ
 SPIDEV bmi088_g       SPI1 DEVID3  BMI088_G_CS     MODE3  10*MHZ 10*MHZ
 SPIDEV ms5611         SPI4 DEVID1  MS5611_CS       MODE3  20*MHZ 20*MHZ
 SPIDEV ramtron        SPI2 DEVID1  FRAM_CS         MODE3  8*MHZ  8*MHZ 
 
-# one baro
+# one baro  定义1个气压计接口
 BARO MS56XX SPI:ms5611
 
-# two IMUs
-IMU Invensensev2 SPI:icm20649 ROTATION_NONE
-IMU BMI088 SPI:bmi088_a SPI:bmi088_g ROTATION_YAW_90
+# two IMUs 定义2个IMU的接口 安装方向
+IMU Invensensev2 SPI:icm20649 ROTATION_PITCH_180
+IMU BMI088 SPI:bmi088_a SPI:bmi088_g ROTATION_PITCH_180
 
-define HAL_DEFAULT_INS_FAST_SAMPLE 5
+# 设置惯性测量单元（IMU）的默认快速采样频率  0:FirstIMU,1:SecondIMU,2:ThirdIMU
+define HAL_DEFAULT_INS_FAST_SAMPLE 3
 
-# compasses
+# compasses 定义外部I2C地磁传感器 地址 是否使用 板上安装角度
 define HAL_PROBE_EXTERNAL_I2C_COMPASSES
-COMPASS IST8310 I2C:ALL_EXTERNAL:0x0E true  ROTATION_ROLL_180_YAW_90
-COMPASS IST8310 I2C:ALL_INTERNAL:0x0E false ROTATION_ROLL_180_YAW_270
+COMPASS IST8310 I2C:ALL_EXTERNAL:0x0E true  ROTATION_NONE #ROTATION_ROLL_180_YAW_90
+COMPASS IST8310 I2C:ALL_INTERNAL:0x0E false ROTATION_ROLL_180_YAW_90
 
 # microSD support
 PC8 SDMMC1_D0 SDMMC1
@@ -164,18 +172,25 @@ PC11 SDMMC1_D3 SDMMC1
 PC12 SDMMC1_CK SDMMC1
 PD2 SDMMC1_CMD SDMMC1
 
-# enable RAMTROM parameter storage
+# enable RAMTROM parameter storage  储存参数的RAM
 define HAL_STORAGE_SIZE 32768
 define HAL_WITH_RAMTRON 1
 
-# enable FAT filesystem support (needs a microSD defined via SDMMC)
+# enable FAT filesystem support (needs a microSD defined via SDMMC)  使能文件系统
 define HAL_OS_FATFS_IO 1
 
 define HAL_BOARD_LOG_DIRECTORY "/TG-UFC-H7-JP/LOGS"
 define HAL_BOARD_TERRAIN_DIRECTORY "/TG-UFC-H7-JP/TERRAIN"
 
+# DMA优先级 DMA不共享
 DMA_PRIORITY  ADC* SPI1* TIM*UP*
 DMA_NOSHARE  SPI1* TIM*UP* 
 
 # RUN LED
-PE2 LED0 OUTPUT LOW GPIO(90)
+PE2 LED0 OUTPUT LOW GPIO(0)
+define HAL_GPIO_A_LED_PIN 0
+define HAL_GPIO_LED_ON  0
+define HAL_GPIO_LED_OFF 1
+
+# use pixracer style 3-LED indicators  LED指示类型
+define HAL_HAVE_PIXRACER_LED

@@ -118,7 +118,7 @@ extern AP_Vehicle& vehicle;
 #endif
 
 /*
-  setup is called when the sketch starts
+  setup is called when the sketch starts 此函数仅在启动时调用一次。用于初始化一些必要的任务。此函数由 HAL 中的 main() 函数调用
  */
 void AP_Vehicle::setup()
 {
@@ -126,7 +126,7 @@ void AP_Vehicle::setup()
     AP_Param::setup_sketch_defaults();
 
     // initialise serial port
-    serial_manager.init_console();
+    serial_manager.init_console(); // 在libraries/AP_SerialManager/AP_SerialManager.cpp中实现
 
     DEV_PRINTF("\n\nInit %s"
                         "\n\nFree RAM: %u\n",
@@ -167,14 +167,17 @@ void AP_Vehicle::setup()
     // diagnostic output during boot process.  We have to initialise
     // the GCS singleton first as it sets the global mavlink system ID
     // which may get used very early on.
-    gcs().init();
+    // MAVLINK初始化，由对应的载具.cpp文件中调用对应的的setup()函数实现该函数的调用
+    // 例如Plane类继承了AP_Vehicle类所实现的函数，那么Plane::setup()函数在运行过程中会调用void AP_Vehicle::setup()中的gcs().init()
+    gcs().init(); 
 
     // initialise serial ports
-    serial_manager.init();
-    gcs().setup_console();
+    serial_manager.init(); // 实现对串口的初始化，在libraries/AP_SerialManager/AP_SerialManager.cpp中实现
+    gcs().setup_console(); // 尽早设置第一个端口，以允许BoardConfig报告错误，在GCS_Common.cpp中实现
 
     // Register scheduler_delay_cb, which will run anytime you have
     // more than 5ms remaining in your call to hal.scheduler->delay
+    // 注册mavlink服务回调。 这将在对hal.scheduler-> delay的调用中剩余超过5毫秒的任何时间运行。这个函数将调用scheduler_delay_callback
     hal.scheduler->register_delay_callback(scheduler_delay_callback, 5);
 
 #if HAL_MSP_ENABLED
@@ -188,7 +191,7 @@ void AP_Vehicle::setup()
 #endif
 
     // init_ardupilot is where the vehicle does most of its initialisation.
-    init_ardupilot();
+    init_ardupilot(); //初始化对应载具下所需要的一切，实际调用的是各载具文件夹下的system.cpp文件中的init_ardupilot()函数，比如\ArduPlane\system.cpp
 
 #if AP_AIRSPEED_ENABLED
     airspeed.init();
@@ -384,6 +387,7 @@ void AP_Vehicle::get_common_scheduler_tasks(const AP_Scheduler::Task*& tasks, ui
  *  MAVLink to process packets while waiting for the initialisation to
  *  complete
  */
+// 官方的解释是处理MAVLink数据包的delay（）回调。 我们在长时间运行的库初始化例程中将其设置为回调，以允许MAVLink在等待初始化完成的同时处理数据包
 void AP_Vehicle::scheduler_delay_callback()
 {
 #if APM_BUILD_TYPE(APM_BUILD_Replay)

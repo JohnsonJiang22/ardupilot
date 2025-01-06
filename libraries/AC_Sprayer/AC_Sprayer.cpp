@@ -1,4 +1,4 @@
-#include "AC_Sprayer.h"
+#include "AC_Sprayer.h"  // 喷洒系统，用于农业喷洒、消防灭火喷洒等场景
 
 #if HAL_SPRAYER_ENABLED
 

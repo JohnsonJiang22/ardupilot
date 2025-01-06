@@ -867,28 +867,30 @@ bool AP_GPS::should_log() const
 
 /*
   update one GPS instance. This should be called at 10Hz or greater
+  在这里对一个GPS实例进行更新
  */
 void AP_GPS::update_instance(uint8_t instance)
 {
-    if (_type[instance] == GPS_TYPE_HIL) {
+    if (_type[instance] == GPS_TYPE_HIL) { // 硬件在环仿真
         // in HIL, leave info alone
         return;
     }
-    if (_type[instance] == GPS_TYPE_NONE) {
+    if (_type[instance] == GPS_TYPE_NONE) { // 无GPS使能
         // not enabled
         state[instance].status = NO_GPS;
         state[instance].hdop = GPS_UNKNOWN_DOP;
         state[instance].vdop = GPS_UNKNOWN_DOP;
         return;
     }
-    if (locked_ports & (1U<<instance)) {
+    if (locked_ports & (1U<<instance)) { // GPS端口被占用
         // the port is locked by another driver
         return;
     }
 
-    if (drivers[instance] == nullptr) {
+    if (drivers[instance] == nullptr) { // 未判断出GPS是什么类型
         // we don't yet know the GPS type of this one, or it has timed
         // out and needs to be re-initialised
+        // 我们还不知道这个GPS的类型，或者它已经超时并需要重新初始化
         detect_instance(instance);
         return;
     }
@@ -898,7 +900,7 @@ void AP_GPS::update_instance(uint8_t instance)
     }
 
     // we have an active driver for this instance
-    bool result = drivers[instance]->read();
+    bool result = drivers[instance]->read(); // //读取数据
     uint32_t tnow = AP_HAL::millis();
 
     // if we did not get a message, and the idle timer of 2 seconds

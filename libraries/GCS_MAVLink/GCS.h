@@ -1,6 +1,9 @@
 /// @file	GCS.h
 /// @brief	Interface definition for the various Ground Control System
 // protocols.
+
+// 本文件内部实现了GCS_MAVLINK类和GCS类
+
 #pragma once
 
 #include <AP_HAL/AP_HAL_Boards.h>
@@ -138,7 +141,7 @@ private:
 ///
 /// @class	GCS_MAVLINK
 /// @brief	MAVLink transport control class
-///
+/// class GCS_MAVLINK是MAVLink传输控制类
 class GCS_MAVLINK
 {
 public:
@@ -266,7 +269,10 @@ public:
     // mission item index to be sent on queued msg, delayed or not
     uint16_t mission_item_reached_index = AP_MISSION_CMD_INDEX_NONE;
 
-    // common send functions
+    // 发送自定义标准/通用的消息函数声明
+    void send_mav_msg_test(void);
+
+    // common send functions  发送标准/通用的消息
     void send_heartbeat(void) const;
     void send_meminfo(void);
     void send_fence_status() const;
@@ -680,9 +686,10 @@ private:
 
     void service_statustext(void);
 
-    virtual void        handleMessage(const mavlink_message_t &msg) = 0;
+    // 在GCS_MAVLINK类中实现为一个虚函数，因此我们必须在各个具体的载具类型中找到对应派生类中的具体实现，比如\ArduPlane\GCS_Mavlink.cpp中的 void GCS_MAVLINK_Plane::handleMessage(const mavlink_message_t &msg)
+    virtual void        handleMessage(const mavlink_message_t &msg) = 0; 
 
-    MAV_RESULT handle_servorelay_message(const mavlink_command_long_t &packet);
+    MAV_RESULT handle_servorelay_message(const mavlink_command_long_t &packet); 
 
     static bool command_long_stores_location(const MAV_CMD command);
 
@@ -1005,6 +1012,8 @@ private:
 
 /// @class GCS
 /// @brief global GCS object
+// class GCS相当于在pixhawk内部实现了一个类似地面站的功能（电脑作为地面站需要接受pixhawk发送给我们的mavlink消息，
+// 而pixhawk在接收mavlink消息的时候，内部程序也需要实现一个地面站的功能用来实现接收）
 class GCS
 {
 
@@ -1156,9 +1165,9 @@ protected:
     uint32_t control_sensors_health;  // 用于标识当前系统中已连接或可用的控制传感器的健康状态
     virtual void update_vehicle_sensor_status_flags() {}
 
-    GCS_MAVLINK_Parameters chan_parameters[MAVLINK_COMM_NUM_BUFFERS];
+    GCS_MAVLINK_Parameters chan_parameters[MAVLINK_COMM_NUM_BUFFERS]; // 定义了针对每一个接口的接口参数
     uint8_t _num_gcs;
-    GCS_MAVLINK *_chan[MAVLINK_COMM_NUM_BUFFERS];
+    GCS_MAVLINK *_chan[MAVLINK_COMM_NUM_BUFFERS]; // 这是一个GCS_MAVLINK类生成的指针数组对象，其中在GCS_MAVLink.h中有定义，意思就是说对于mavlink我们最多只能有5个接口
 
 private:
 

@@ -3,7 +3,7 @@
 #include <GCS_MAVLink/GCS.h>
 #include "GCS_Mavlink.h"
 
-class GCS_Plane : public GCS
+class GCS_Plane : public GCS  // GCS_Plane是GCS类在ArduPlane中的具体派生类
 {
     friend class Plane;  // for access to _chan in parameter declarations
 

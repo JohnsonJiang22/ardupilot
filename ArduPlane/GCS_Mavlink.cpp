@@ -427,6 +427,13 @@ bool GCS_MAVLINK_Plane::try_send_message(enum ap_message id)
 #endif
         break;
 
+    // 添加自定义的mavlink消息发送
+    case MSG_TEST_MAVLINK: // 消息ID枚举
+        CHECK_PAYLOAD_SIZE(TEST_MAVLINK); // TEST_MAVLINK为消息名称
+        send_mav_msg_test();
+        gcs().send_text(MAV_SEVERITY_DEBUG, "MavLink Message Test...");
+        break;
+
     default:
         return GCS_MAVLINK::try_send_message(id);
     }
@@ -478,7 +485,7 @@ void GCS_MAVLINK_Plane::send_hygrometer()
 const AP_Param::GroupInfo GCS_MAVLINK_Parameters::var_info[] = {
     // @Param: RAW_SENS
     // @DisplayName: Raw sensor stream rate
-    // @Description: Raw sensor stream rate to ground station
+    // @Description: Raw sensor stream rate to ground station 向地面站传输原始传感器数据流的速率
     // @Units: Hz
     // @Range: 0 50
     // @Increment: 1
@@ -488,7 +495,7 @@ const AP_Param::GroupInfo GCS_MAVLINK_Parameters::var_info[] = {
 
     // @Param: EXT_STAT
     // @DisplayName: Extended status stream rate to ground station
-    // @Description: Extended status stream rate to ground station
+    // @Description: Extended status stream rate to ground station 向地面站发送扩展状态数据流的速率
     // @Units: Hz
     // @Range: 0 50
     // @Increment: 1
@@ -498,7 +505,7 @@ const AP_Param::GroupInfo GCS_MAVLINK_Parameters::var_info[] = {
 
     // @Param: RC_CHAN
     // @DisplayName: RC Channel stream rate to ground station
-    // @Description: RC Channel stream rate to ground station
+    // @Description: RC Channel stream rate to ground station 向地面站传输的遥控通道数据流速率
     // @Units: Hz
     // @Range: 0 50
     // @Increment: 1
@@ -508,7 +515,7 @@ const AP_Param::GroupInfo GCS_MAVLINK_Parameters::var_info[] = {
 
     // @Param: RAW_CTRL
     // @DisplayName: Raw Control stream rate to ground station
-    // @Description: Raw Control stream rate to ground station
+    // @Description: Raw Control stream rate to ground station 向地面站发送原始控制数据流的速率
     // @Units: Hz
     // @Range: 0 50
     // @Increment: 1
@@ -518,7 +525,7 @@ const AP_Param::GroupInfo GCS_MAVLINK_Parameters::var_info[] = {
 
     // @Param: POSITION
     // @DisplayName: Position stream rate to ground station
-    // @Description: Position stream rate to ground station
+    // @Description: Position stream rate to ground station 向地面站发送位置信息的速率
     // @Units: Hz
     // @Range: 0 50
     // @Increment: 1
@@ -528,7 +535,7 @@ const AP_Param::GroupInfo GCS_MAVLINK_Parameters::var_info[] = {
 
     // @Param: EXTRA1
     // @DisplayName: Extra data type 1 stream rate to ground station
-    // @Description: Extra data type 1 stream rate to ground station
+    // @Description: Extra data type 1 stream rate to ground station 向地面站发送的额外数据类型1的流速率
     // @Units: Hz
     // @Range: 0 50
     // @Increment: 1
@@ -538,7 +545,7 @@ const AP_Param::GroupInfo GCS_MAVLINK_Parameters::var_info[] = {
 
     // @Param: EXTRA2
     // @DisplayName: Extra data type 2 stream rate to ground station
-    // @Description: Extra data type 2 stream rate to ground station
+    // @Description: Extra data type 2 stream rate to ground station 向地面站发送的额外数据类型2的流速率
     // @Units: Hz
     // @Range: 0 50
     // @Increment: 1
@@ -548,7 +555,7 @@ const AP_Param::GroupInfo GCS_MAVLINK_Parameters::var_info[] = {
 
     // @Param: EXTRA3
     // @DisplayName: Extra data type 3 stream rate to ground station
-    // @Description: Extra data type 3 stream rate to ground station
+    // @Description: Extra data type 3 stream rate to ground station 向地面站发送的额外数据类型3的流速率
     // @Units: Hz
     // @Range: 0 50
     // @Increment: 1
@@ -558,7 +565,7 @@ const AP_Param::GroupInfo GCS_MAVLINK_Parameters::var_info[] = {
 
     // @Param: PARAMS
     // @DisplayName: Parameter stream rate to ground station
-    // @Description: Parameter stream rate to ground station
+    // @Description: Parameter stream rate to ground station  向地面站传输参数的数据流速率
     // @Units: Hz
     // @Range: 0 50
     // @Increment: 1
@@ -568,7 +575,7 @@ const AP_Param::GroupInfo GCS_MAVLINK_Parameters::var_info[] = {
 
     // @Param: ADSB
     // @DisplayName: ADSB stream rate to ground station
-    // @Description: ADSB stream rate to ground station
+    // @Description: ADSB stream rate to ground station 向地面站传输ADSB数据流速率
     // @Units: Hz
     // @Range: 0 50
     // @Increment: 1
@@ -629,6 +636,7 @@ static const ap_message STREAM_EXTRA1_msgs[] = {
 #if AP_AIRSPEED_HYGROMETER_ENABLE
     MSG_HYGROMETER,
 #endif
+    MSG_TEST_MAVLINK, // 这里至关重要，否则无法正常发送到地面站
 };
 static const ap_message STREAM_EXTRA2_msgs[] = {
     MSG_VFR_HUD
@@ -1370,7 +1378,7 @@ void GCS_MAVLINK_Plane::handleMessage(const mavlink_message_t &msg)
     }
 
     default:
-        handle_common_message(msg);
+        handle_common_message(msg); // 处理标准/通用的消息内容，其它case处理的是特殊消息  
         break;
     } // end switch
 } // end handle mavlink

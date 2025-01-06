@@ -259,18 +259,18 @@ void GCS_MAVLINK::handle_param_request_read(const mavlink_message_t &msg)
 void GCS_MAVLINK::handle_param_set(const mavlink_message_t &msg)
 {
     mavlink_param_set_t packet;
-    mavlink_msg_param_set_decode(&msg, &packet);
+    mavlink_msg_param_set_decode(&msg, &packet); // 解码，从msg报文中将参数设置结构（mavlink_param_set_t）提取出来赋值给packet结构
     enum ap_var_type var_type;
 
     // set parameter
     AP_Param *vp;
     char key[AP_MAX_NAME_SIZE+1];
-    strncpy(key, (char *)packet.param_id, AP_MAX_NAME_SIZE);
+    strncpy(key, (char *)packet.param_id, AP_MAX_NAME_SIZE); // 获取16个字符长度的参数ID
     key[AP_MAX_NAME_SIZE] = 0;
 
     // find existing param so we can get the old value
     uint16_t parameter_flags = 0;
-    vp = AP_Param::find(key, &var_type, &parameter_flags);
+    vp = AP_Param::find(key, &var_type, &parameter_flags); // 根据参数ID找到对应的参数
     if (vp == nullptr || isnan(packet.param_value) || isinf(packet.param_value)) {
         return;
     }
@@ -285,6 +285,7 @@ void GCS_MAVLINK::handle_param_set(const mavlink_message_t &msg)
         }
     }
 
+    // 此处判断parameter_flags标志是否为允许设置内部参数是否有效，或者判断将要被设置的参数是否为只读参数，二者条件满足其一，则不进行参数修改操作，同时向地面站发送告警信息和参数值
     if ((parameter_flags & AP_PARAM_FLAG_INTERNAL_USE_ONLY) || vp->is_read_only()) {
         gcs().send_text(MAV_SEVERITY_WARNING, "Param write denied (%s)", key);
         // send the readonly value
@@ -293,7 +294,7 @@ void GCS_MAVLINK::handle_param_set(const mavlink_message_t &msg)
     }
 
     // set the value
-    vp->set_float(packet.param_value, var_type);
+    vp->set_float(packet.param_value, var_type); // 参数赋值
 
     /*
       we force the save if the value is not equal to the old
@@ -301,6 +302,7 @@ void GCS_MAVLINK::handle_param_set(const mavlink_message_t &msg)
       constructors, such as PID elements. Otherwise a set to the
       default value which differs from the constructor value doesn't
       save the change
+      如果值不等于旧值，我们强制进行保存。这样做是为了处理在构造函数中使用覆盖值的情况，例如PID元素。否则，如果将值设置为与构造函数中的值不同的默认值，将不会保存更改
      */
     bool force_save = !is_equal(packet.param_value, old_value);
 
@@ -452,13 +454,13 @@ void GCS_MAVLINK::handle_common_param_message(const mavlink_message_t &msg)
 {
     switch (msg.msgid) {
     case MAVLINK_MSG_ID_PARAM_REQUEST_LIST:
-        handle_param_request_list(msg);
+        handle_param_request_list(msg); // 参数请求列表
         break;
     case MAVLINK_MSG_ID_PARAM_SET:
-        handle_param_set(msg);
+        handle_param_set(msg); // 参数设置
         break;
     case MAVLINK_MSG_ID_PARAM_REQUEST_READ:
-        handle_param_request_read(msg);
+        handle_param_request_read(msg); // 请求读参数
         break;
     }
 }

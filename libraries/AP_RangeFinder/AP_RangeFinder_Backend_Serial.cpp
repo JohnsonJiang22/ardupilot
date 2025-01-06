@@ -36,7 +36,7 @@ AP_RangeFinder_Backend_Serial::AP_RangeFinder_Backend_Serial(
 
 void AP_RangeFinder_Backend_Serial::init_serial(uint8_t serial_instance)
 {
-    uart = AP::serialmanager().find_serial(AP_SerialManager::SerialProtocol_Rangefinder, serial_instance);
+    uart = AP::serialmanager().find_serial(AP_SerialManager::SerialProtocol_Rangefinder, serial_instance); // 通过serial_manager类和用户设置的参数获取串口设备对象实例
     if (uart != nullptr) {
         uart->begin(initial_baudrate(serial_instance), rx_bufsize(), tx_bufsize());
     }

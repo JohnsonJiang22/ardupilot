@@ -2,6 +2,8 @@
 #include <AP_InternalError/AP_InternalError.h>
 #include "AC_WPNav_OA.h"
 
+// 带避障功能的航点导航功能
+
 AC_WPNav_OA::AC_WPNav_OA(const AP_InertialNav& inav, const AP_AHRS_View& ahrs, AC_PosControl& pos_control, const AC_AttitudeControl& attitude_control) :
     AC_WPNav(inav, ahrs, pos_control, attitude_control)
 {

@@ -1,5 +1,7 @@
 #include "Copter.h"
 
+// 坠机检测
+
 // Code to detect a crash main ArduCopter code
 #define CRASH_CHECK_TRIGGER_SEC         2       // 2 seconds inverted indicates a crash
 #define CRASH_CHECK_ANGLE_DEVIATION_DEG 30.0f   // 30 degrees beyond target angle is signal we are out of control

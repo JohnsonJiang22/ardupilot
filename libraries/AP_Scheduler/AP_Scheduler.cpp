@@ -213,18 +213,19 @@ void AP_Scheduler::run(uint32_t time_available)
         }
 
         if (task.priority > MAX_FAST_TASK_PRIORITIES) {
-            const uint16_t dt = _tick_counter - _last_run[i];
+            const uint16_t dt = _tick_counter - _last_run[i]; // _tick_counter是任务当前循环完的圈数，_last_run[i]是上次运行完该任务记下的循环圈数，所以dt是上次运行到现在间隔的循环圈数，即还差多少圈
             // we allow 0 to mean loop rate
-            uint32_t interval_ticks = (is_zero(task.rate_hz) ? 1 : _loop_rate_hz / task.rate_hz);
+            // _loop_rate_hz是主循环的频率，默认是400Hz，task.rate_hz是当前任务的执行频率，假如是20Hz，则interval_ticks = 20，表示该任务需要等主循环执行20圈才执行一次当前任务
+            uint32_t interval_ticks = (is_zero(task.rate_hz) ? 1 : _loop_rate_hz / task.rate_hz); 
             if (interval_ticks < 1) {
                 interval_ticks = 1;
             }
-            if (dt < interval_ticks) {
+            if (dt < interval_ticks) { // 如果dt小于interval_ticks，说明循环圈数还不够，不能运行任务函数
                 // this task is not yet scheduled to run again
                 continue;
             }
             // this task is due to run. Do we have enough time to run it?
-            _task_time_allowed = task.max_time_micros;
+            _task_time_allowed = task.max_time_micros; // 更新当前任务允许执行的最大时间
 
             if (dt >= interval_ticks*2) {
                 perf_info.task_slipped(i);
@@ -236,9 +237,9 @@ void AP_Scheduler::run(uint32_t time_available)
                 task_not_achieved++;
             }
 
-            if (_task_time_allowed > time_available) {
-                // not enough time to run this task.  Continue loop -
-                // maybe another task will fit into time remaining
+            if (_task_time_allowed > time_available) {   // 任务所需的时间 大于 剩余时间
+                // not enough time to run this task.  Continue loop - 没有足够的时间来运行当前任务，继续循环查找下一个任务是否可以运行
+                // maybe another task will fit into time remaining  也计另一个任务能适合当前剩余的时间
                 continue;
             }
         } else {
@@ -246,23 +247,23 @@ void AP_Scheduler::run(uint32_t time_available)
         }
 
         // run it
-        _task_time_started = now;
+        _task_time_started = now; // 任务开始时的时间
         hal.util->persistent_data.scheduler_task = i;
 #if CONFIG_HAL_BOARD == HAL_BOARD_SITL
         fill_nanf_stack();
 #endif
-        task.function();
+        task.function(); // 可跳转到相应的功能函数里
         hal.util->persistent_data.scheduler_task = -1;
 
         // record the tick counter when we ran. This drives
         // when we next run the event
-        _last_run[i] = _tick_counter;
+        _last_run[i] = _tick_counter; // 记录上次任务执行后的loop循环的圈数
 
         // work out how long the event actually took
-        now = AP_HAL::micros();
-        uint32_t time_taken = now - _task_time_started;
+        now = AP_HAL::micros(); // 记录执行完当前任务时刻的时间，就是此刻时间
+        uint32_t time_taken = now - _task_time_started; // 将此刻时间减去当前任务开始执行的时间，得到任务运行所花的时间 time_taken
         bool overrun = false;
-        if (time_taken > _task_time_allowed) {
+        if (time_taken > _task_time_allowed) { // 如果当前任务实际执行时间 time_taken 大于任务所需的时间，则立即结束
             overrun = true;
             // the event overran!
             debug(3, "Scheduler overrun task[%u-%s] (%u/%u)\n",
@@ -276,6 +277,8 @@ void AP_Scheduler::run(uint32_t time_available)
 
         if (time_taken >= time_available) {
             /*
+            我们已经没有剩余时间了，但我们还是需要继续遍历任务表，以防在这个任务之后还有另一个需要快速执行的循环任务。同时，我们需要更新记录（可能是指任务执行的时间、次数等统计数据），
+            以便我们能够判断是否需要为循环分配额外的时间（即降低循环的执行速率）。现在，我们将time_available（可用时间）设置为零，这意味着在这个任务之后，我们只会执行那些被标记为快速的任务
               we are out of time, but we need to keep walking the task
               table in case there is another fast loop task after this
               task, plus we need to update the accouting so we can
@@ -366,13 +369,13 @@ void AP_Scheduler::loop()
     // in multiples of the main loop tick. So if they don't run on
     // the first call to the scheduler they won't run on a later
     // call until scheduler.tick() is called again
-    const uint32_t loop_us = get_loop_period_us();
+    const uint32_t loop_us = get_loop_period_us(); // 获取主循环执行周期，单位us，即400Hz的周期，为2500us
     uint32_t now = AP_HAL::micros();
     uint32_t time_available = 0;
     const uint32_t loop_tick_us = now - sample_time_us;
     if (loop_tick_us < loop_us) {
         // get remaining time available for this loop
-        time_available = loop_us - loop_tick_us;
+        time_available = loop_us - loop_tick_us; // 计算出主循环当前剩余的时间，单位us
     }
 
     // add in extra loop time determined by not achieving scheduler tasks

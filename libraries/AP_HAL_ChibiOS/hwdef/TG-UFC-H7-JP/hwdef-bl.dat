@@ -7,7 +7,7 @@ MCU STM32H7xx STM32H743xx
 # crystal frequency
 OSCILLATOR_HZ 16000000
 
-# board ID for firmware load
+# board ID for firmware load 板子ID，要和用户硬件描述程序一致
 APJ_BOARD_ID 660
 
 FLASH_SIZE_KB 2048
@@ -16,20 +16,21 @@ FLASH_SIZE_KB 2048
 FLASH_RESERVE_START_KB 0
 
 # the location where the bootloader will put the firmware
-# the H743 has 128k sectors
+# the H743 has 128k sectors 引导bootloader程序预留FLASH大小
 FLASH_BOOTLOADER_LOAD_KB 128
 
-# ChibiOS system timer
+# ChibiOS system timer 系统所用为timer2
 STM32_ST_USE_TIMER 2
 
 PE2 LED_BOOTLOADER OUTPUT OPENDRAIN HIGH
 
+#定义输出低电平时LED点亮
 define HAL_LED_ON 0
 
 # order of UARTs (and USB)
 SERIAL_ORDER OTG1 UART7
 
-# UART7 is debug
+# UART7 is debug 定义串口7的接收和发送引脚 串口7无DMA
 PE7 UART7_RX UART7 NODMA
 PE8 UART7_TX UART7 NODMA
 
@@ -42,9 +43,10 @@ PA14 JTCK-SWCLK SWD
 define HAL_USE_EMPTY_STORAGE 1
 define HAL_STORAGE_SIZE 32768
 
+# SD7代表UART7 这里的意思是bootloader调试串口是UART7
 define BOOTLOADER_DEBUG SD7
 
-# Add CS pins to ensure they are high in bootloader
+# Add CS pins to ensure they are high in bootloader 定义所用传感器使能引脚
 PA4  ICM20649_CS CS SPEED_VERYLOW
 PB2 BMI088_A_CS CS
 PB1  BMI088_G_CS CS

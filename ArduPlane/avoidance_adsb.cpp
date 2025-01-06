@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include "Plane.h"
 
+// 负责处理ADS-B信号，以实现无人机的避障功能
+
 #if HAL_ADSB_ENABLED
 void Plane::avoidance_adsb_update(void)
 {

@@ -22,7 +22,7 @@ public:
     ///
     AC_P(const float &initial_p = 0.0f)
     {
-		AP_Param::setup_object_defaults(this, var_info);
+		AP_Param::setup_object_defaults(this, var_info); // setup_object_defaults()函数的具体实现路径在：\libraries\AP_Param\AP_Param.cpp中
         _kp.set_and_default(initial_p);
     }
 

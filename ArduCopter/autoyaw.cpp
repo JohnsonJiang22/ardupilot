@@ -1,5 +1,5 @@
 #include "Copter.h"
-
+// 实现自动航向控制功能
 Mode::AutoYaw Mode::auto_yaw;
 
 // roi_yaw - returns heading towards location held in roi

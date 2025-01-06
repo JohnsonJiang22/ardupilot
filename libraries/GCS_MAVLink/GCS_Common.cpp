@@ -989,6 +989,9 @@ ap_message GCS_MAVLINK::mavlink_id_to_ap_message_id(const uint32_t mavlink_id) c
 #if HAL_ADSB_ENABLED
         { MAVLINK_MSG_ID_UAVIONIX_ADSB_OUT_STATUS, MSG_UAVIONIX_ADSB_OUT_STATUS},
 #endif
+        // 添加自定义的mavlink msg_id
+        { MAVLINK_MSG_ID_TEST_MAVLINK,          MSG_TEST_MAVLINK},
+
             };
 
     for (uint8_t i=0; i<ARRAY_SIZE(map); i++) {
@@ -1143,7 +1146,7 @@ bool GCS_MAVLINK::do_try_send_message(const ap_message id)
     void *data = hal.scheduler->disable_interrupts_save();
     uint32_t start_send_message_us = AP_HAL::micros();
 #endif
-    if (!try_send_message(id)) {
+    if (!try_send_message(id)) {  // 在合适的时间调用try_send_message()函数，这也是do_try_send_message()函数的最重要的功能
         // didn't fit in buffer...
 #if GCS_DEBUG_SEND_MESSAGE_TIMINGS
         try_send_message_stats.no_space_for_message++;
@@ -1531,7 +1534,7 @@ void GCS_MAVLINK::packetReceived(const mavlink_status_t &status,
         // e.g. enforce-sysid says we shouldn't look at this packet
         return;
     }
-    handleMessage(msg);
+    handleMessage(msg); // 这个函数才是对于接收到的消息包进行真正处理的函数
 }
 
 void
@@ -1579,7 +1582,7 @@ GCS_MAVLINK::update_receive(uint32_t max_time_us)
 
         bool parsed_packet = false;
 
-        // Try to get a new message
+        // Try to get a new message  接收一帧新报文
         if (mavlink_parse_char(chan, c, &msg, &status)) {
             hal.util->persistent_data.last_mavlink_msgid = msg.msgid;
             packetReceived(status, msg);
@@ -2226,7 +2229,7 @@ void GCS::update_send()
     // one backend doesn't monopolise all of the time allowed for sending
     // messages
     for (uint8_t i=first_backend_to_send; i<num_gcs(); i++) {
-        chan(i)->update_send();
+        chan(i)->update_send(); // 该语句实现对于每一个通道上的MAVLINK消息的发送。在本文件下的 void GCS_MAVLINK::update_send()函数中，找到do_try_send_message()，其是最主要的功能部分实现
     }
     for (uint8_t i=0; i<first_backend_to_send; i++) {
         chan(i)->update_send();
@@ -2242,8 +2245,8 @@ void GCS::update_send()
 
 void GCS::update_receive(void)
 {
-    for (uint8_t i=0; i<num_gcs(); i++) {
-        chan(i)->update_receive();
+    for (uint8_t i=0; i<num_gcs(); i++) { // num_gcs()获取到总共的MAVLINK数据传输接口（或链路）。然后对于每一个通道执行更新接收操作update_receive()
+        chan(i)->update_receive(); // 这个函数才是实际上对于每一个通道接口真正执行接收MAVLINK消息的函数
     }
     // also update UART pass-thru, if enabled
     update_passthru();
@@ -2259,11 +2262,14 @@ void GCS::send_mission_item_reached_message(uint16_t mission_index)
 
 void GCS::setup_console()
 {
+    // find_serial: 在可用的串行端口搜索允许给定协议的第一个实例（instance），如果搜索的是协议的第一个实例，那么实例（instance）应该为0，第二个为1，以此类推。成功则返回串口设备
     AP_HAL::UARTDriver *uart = AP::serialmanager().find_serial(AP_SerialManager::SerialProtocol_MAVLink, 0);
     if (uart == nullptr) {
         // this is probably not going to end well.
         return;
-    }
+    } 
+    
+    // 接下来就是对是否检测到串口设备及chan参数进行判断，没有就直接返回，有的话那么就调用 create_gcs_mavlink_backend()函数
     if (ARRAY_SIZE(chan_parameters) == 0) {
         return;
     }
@@ -2276,6 +2282,8 @@ GCS_MAVLINK_Parameters::GCS_MAVLINK_Parameters()
     AP_Param::setup_object_defaults(this, var_info);
 }
 
+// 这个函数的作用就是根据给定的chan_parameters[]中的参数以及获取到的串口生成新的GCS_MAVLINK_XXX（XXX表示具体载具类型，继承自GCS_MAVLINK）对象保存在_chan[]中，
+// 该部分作用通过 new_gcs_mavlink_backend()这个函数完成。然后通过init()函数实现接口类的初始化工作，如果初始化失败，就删除这个接口
 void GCS::create_gcs_mavlink_backend(GCS_MAVLINK_Parameters &params, AP_HAL::UARTDriver &uart)
 {
     if (_num_gcs >= ARRAY_SIZE(chan_parameters)) {
@@ -2295,6 +2303,7 @@ void GCS::create_gcs_mavlink_backend(GCS_MAVLINK_Parameters &params, AP_HAL::UAR
     _num_gcs++;
 }
 
+// 与setup_console()函数类似，这边实现的是对剩下4个类接口的注册及初始化工作，重点只要知道这个函数完成了APM固件中“地面站”接口的注册及初始化即可
 void GCS::setup_uarts()
 {
     for (uint8_t i = 1; i < MAVLINK_COMM_NUM_BUFFERS; i++) {
@@ -2321,7 +2330,7 @@ void GCS::setup_uarts()
     ltm_telemetry.init();
 #endif
 
-#if AP_DEVO_TELEM_ENABLED
+#if AP_DEVO_TELEM_ENABLED // 华尔科遥控器
     devo_telemetry.init();
 #endif
 }
@@ -3658,7 +3667,7 @@ void GCS_MAVLINK::handle_common_message(const mavlink_message_t &msg)
     case MAVLINK_MSG_ID_PARAM_REQUEST_LIST:
     case MAVLINK_MSG_ID_PARAM_SET:
     case MAVLINK_MSG_ID_PARAM_REQUEST_READ:
-        handle_common_param_message(msg);
+        handle_common_param_message(msg); // 与参数设置相关
         break;
 
     case MAVLINK_MSG_ID_SET_GPS_GLOBAL_ORIGIN:
@@ -5113,6 +5122,9 @@ void GCS_MAVLINK::send_extended_sys_state() const
     mavlink_msg_extended_sys_state_send(chan, vtol_state(), landed_state());
 }
 
+// 函数实现在对应消息的头文件中，比如\libraries\GCS_MAVLink\include\mavlink\v2.0\common\mavlink_msg_attitude.h中
+// 通过将需要传输的信息生成buf或者packet（究竟是哪个就需要看协议是怎么定的啦，可以全局找一下protocol.h这个文件），
+// 然后通过_mav_finalize_message_chan_send()函数发送出去
 void GCS_MAVLINK::send_attitude() const
 {
     const AP_AHRS &ahrs = AP::ahrs();
@@ -5359,6 +5371,7 @@ void GCS_MAVLINK::send_received_message_deprecation_warning(const char * message
     send_text(MAV_SEVERITY_WARNING, "Received message (%s) is deprecated", message);
 }
 
+// 使用switch-case语句通过判断具体的MAVLINK消息id来实现对于不同APM系统信息的发送功能
 bool GCS_MAVLINK::try_send_message(const enum ap_message id)
 {
     bool ret = true;
@@ -5366,7 +5379,7 @@ bool GCS_MAVLINK::try_send_message(const enum ap_message id)
     switch(id) {
 
     case MSG_ATTITUDE:
-        CHECK_PAYLOAD_SIZE(ATTITUDE);
+        CHECK_PAYLOAD_SIZE(ATTITUDE); // 首先对PAYLOAD长度进行判断，长度合适返回true。然后调用具体的消息处理函数
         send_attitude();
         break;
 
@@ -6400,3 +6413,9 @@ MAV_RESULT GCS_MAVLINK::handle_control_high_latency(const mavlink_command_long_t
     return MAV_RESULT_ACCEPTED;
 }
 #endif // HAL_HIGH_LATENCY2_ENABLED
+
+void GCS_MAVLINK::send_mav_msg_test(void)
+{
+    // 该函数是由ardupilot中包含的mavgenerate工具自动生成的，路径在build/TG-UFC-H7-JP/libraries/GCS_MAVLink/include/mavlink/v2.0/common/mavlink_msg_test_mavlink.h
+    mavlink_msg_test_mavlink_send(chan, 0x0a, 0x0b, 0x0c);
+}

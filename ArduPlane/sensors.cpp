@@ -29,7 +29,7 @@ void Plane::read_rangefinder(void)
         rangefinder.set_estimated_terrain_height(height);
     }
 
-    rangefinder.update();
+    rangefinder.update();  // update实现代码在：\libraries\AP_RangeFinder\AP_RangeFinder.cpp中
 
     rangefinder_height_update();
 }

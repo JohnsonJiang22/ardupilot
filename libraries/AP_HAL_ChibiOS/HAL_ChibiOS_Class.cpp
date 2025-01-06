@@ -243,7 +243,7 @@ static void main_loop()
 
     schedulerInstance.hal_initialized();
 
-    g_callbacks->setup();
+    g_callbacks->setup(); // # AP_Vehicle::setup 
 
 #if HAL_ENABLE_SAVE_PERSISTENT_PARAMS
     utilInstance.apply_persistent_params();
@@ -286,7 +286,7 @@ static void main_loop()
     chThdSetPriority(APM_MAIN_PRIORITY);
 
     while (true) {
-        g_callbacks->loop();
+        g_callbacks->loop(); //  # AP_Vehicle::loop     
 
         /*
           give up 50 microseconds of time if the INS loop hasn't

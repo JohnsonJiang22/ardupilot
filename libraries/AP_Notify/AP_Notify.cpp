@@ -13,6 +13,8 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+// 用于外部指示器（蜂鸣器或LED灯等）通知与状态显示功能
+
 #include "AP_Notify.h"
 
 #include "AP_BoardLED.h"

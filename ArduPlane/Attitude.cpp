@@ -1,5 +1,7 @@
 #include "Plane.h"
 
+// 姿态控制功能
+
 /*
   calculate speed scaling number for control surfaces. This is applied
   to PIDs to change the scaling of the PID with speed. At high speed

@@ -1,6 +1,8 @@
 #include <AP_HAL/AP_HAL.h>
 #include "AC_WPNav.h"
 
+// 航点导航控制
+
 extern const AP_HAL::HAL& hal;
 
 // maximum velocities and accelerations

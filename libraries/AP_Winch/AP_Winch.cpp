@@ -1,4 +1,4 @@
-#include "AP_Winch.h"
+#include "AP_Winch.h"  // AP_Winch库是一个专门用于控制绞盘（Winch）的库,以实现诸如货物吊运、拖拽或紧急情况下的回收等功能
 #include "AP_Winch_PWM.h"
 #include "AP_Winch_Daiwa.h"
 

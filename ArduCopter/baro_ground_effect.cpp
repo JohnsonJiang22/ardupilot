@@ -1,5 +1,12 @@
 #include "Copter.h"
 
+// baro_ground_effect.cpp文件在ArduPilot源码中的主要功能与气压计（Barometer）的地效（Ground Effect）校正相关。地效是指当飞行器（如无人机）接近地面或其他障碍物时，由于空气动力学效应，
+// 气压计读数会受到干扰的现象。这种现象可能导致飞行器的高度读数不准确，进而影响飞行控制和导航的准确性。
+// 具体来说，baro_ground_effect.cpp文件可能包含以下方面的功能：
+// 检测地效现象：通过气压计读数和其他传感器数据（如GPS高度、加速度计等）来检测飞行器是否处于地效影响范围内。
+// 校正气压计读数：一旦检测到地效现象，该文件中的代码将应用适当的算法来校正气压计读数，以减少地效对高度读数的影响。这可能包括基于飞行器的速度、加速度和与地面的距离等因素的动态调整。
+// 提高飞行稳定性：通过准确地校正气压计读数，baro_ground_effect.cpp文件有助于飞行器在低空飞行时保持更稳定的飞行高度和姿态，从而提高飞行的安全性和稳定性。
+
 void Copter::update_ground_effect_detector(void)
 {
     if(!g2.gndeffect_comp_enabled || !motors->armed()) {

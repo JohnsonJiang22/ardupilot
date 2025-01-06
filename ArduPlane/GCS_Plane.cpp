@@ -3,7 +3,7 @@
 
 uint8_t GCS_Plane::sysid_this_mav() const
 {
-    return plane.g.sysid_this_mav;
+    return plane.g.sysid_this_mav; // 返回\ArduPlane\Parameters.cpp中对sysid_this_mav的赋值
 }
 
 void GCS_Plane::update_vehicle_sensor_status_flags(void)
